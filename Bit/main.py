@@ -371,7 +371,7 @@ flicker = False
 cupsList = [0,0,0,0,1,1,1,2] #  0 su vanzemaljci, 1 su +1 život, a 2 su +2 života
 tone = True
 code = 5
-version = "1.3.2 'GAMMA'"
+version = "1.3.3 'DELTA'"
 lives = 1
 livesTick = 1
 totalDistance = 0
@@ -1278,8 +1278,8 @@ laser = 0
 meteors = 0
 coinsUpg = 0
 print('Meteor Shooter',version)
-print('Za Školu budućnosti, Stemi LAB')
-print('GitHub: https://github.com/MrUsername7/PublicStuff/tree/main/The%20Bit%20Superstars/Meteor%20Shooter')
+print('Za STEMIovu Školu budućnosti')
+print('GitHub: https://github.com/MrUsername7/MeteorShooter')
 startup()
 if menu == 1:
     mainmenu()
