@@ -34,7 +34,10 @@ from sprite_data import *
 sprite_coin = FrameBuffer(coinSprite, 11, 11, RGB565)
 sprite_asteroid = FrameBuffer(asteroidSprite, 27, 25, RGB565)
 sprite_cup = FrameBuffer(cupSprite, 40, 40, RGB565)
-sprite_ship = FrameBuffer(shipSprite, 32, 48, RGB565)
+sprite_ship = FrameBuffer(shipSkinSprite[0][0], 32, 48, RGB565)
+sprite_ship_transparent = shipSkinSprite[0][1]
+sprite_laser = FrameBuffer(laserSkinSprite[0][0], 3, 6, RGB565)
+sprite_laser_transparent = laserSkinSprite[0][1]
 sprite_life2times = FrameBuffer(life2timesSprite, 31, 10, RGB565)
 sprite_life = FrameBuffer(lifeSprite, 11, 10, RGB565)
 sprite_alien = FrameBuffer(alienSprite, 22, 29, RGB565)
@@ -282,7 +285,7 @@ lang_hr = [
 'Spremi',
 'Obrisi podatke',
 'Ponovno pokreni',
-'Osvježi'
+'Osvjezi'
 ]
 
 lang_de = [
@@ -335,21 +338,14 @@ lang_es = []
 
 lang_fr = []
 
-startValue = None
-targetValue = None
-step = None
-select = None
-i = 0
+select = 0
 x = None
-menu = None
+menu = 1
 money = 0
-item = None
 laser = 0
-item2 = None
 meteors = 0
 coinsUpg = 0
 value = 0
-temp = None
 shipPos = 1
 shipX = -4
 shipXchngBy = 52 #tu mijenjaj brzinu
@@ -371,7 +367,7 @@ flicker = False
 cupsList = [0,0,0,0,1,1,1,2] #  0 su vanzemaljci, 1 su +1 život, a 2 su +2 života
 tone = True
 code = 5
-version = "1.3.3 'DELTA'"
+version = "1.3.4 'EPSILON'"
 lives = 1
 livesTick = 1
 totalDistance = 0
@@ -438,7 +434,7 @@ def load():
     pass
 
 def langSelectOnStartup():
-  global startValue, targetValue, step, mod, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value
+  global select, menu, laser, meteors, coinsUpg, value
   display.fill(0)
   display.text('SETUP '+lang[33], 64-len('SETUP '+lang[33])*4+offsetX, 0, 65535)
   display.text("English", 128-len("English")*8+offsetX, (0-select+4)*15, 65535)
@@ -459,7 +455,7 @@ def startup():
     time.sleep(1)
     global lang, menu
     load()
-    if lang == None:
+    if lang is None:
         lang = lang_en[:]
         menu = 12
         langSelectOnStartup()
@@ -520,7 +516,7 @@ def about():
   display.commit()
 
 def mainmenu():
-  global startValue, targetValue, step, mod, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value
+  global select, x, menu, laser, meteors, coinsUpg, value
   display.fill(16)
   display.text(lang[5], 64-len(lang[5])*4+offsetX, (0-select+4)*15, 65535)
   display.text(lang[6], 64-len(lang[6])*4+offsetX, (0-select+5)*15, 65535)
@@ -533,7 +529,7 @@ def mainmenu():
   if emulated: display.text(lang[3], 0+offsetX, 120, 65535)
 
 def mainmenu2():
-  global startValue, targetValue, step, mod, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value, tone, temp
+  global select, x, menu, laser, meteors, coinsUpg, value, tone
   display.fill(16)
   temp = lang[9]+str(tone)
   display.text(temp,64-len(temp)*4+offsetX,(0-select+4)*15,65535)
@@ -587,8 +583,8 @@ def appropriateMenu():
     langSelectOnStartup()
 
 def scroll():
-  global startValue, targetValue, step, mod, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value
-  if menu == 1 or (menu >= 5 and menu <= 7) or (menu >= 11 and menu <= 12):
+  global menu
+  if menu == 1 or (5 <= menu <= 7) or (11 <= menu <= 12):
     appropriateMenu()
     display.text(">",0+offsetX,60,65535)
     display.commit()
@@ -602,7 +598,7 @@ def minigameSetup():
 def drawgame():
   global shipX, meteorAY, meteorBY, meteorCY, money, coinsUpg, multi, lives, livesTick, shipPos
   display.fill(0)
-  display.blit(sprite_ship, shipX+3+offsetX, 80, 0)
+  display.blit(sprite_ship, shipX+3+offsetX, 80, sprite_ship_transparent)
   display.blit(sprite_asteroid, 0+offsetX, int(meteorAY), 0)
   display.blit(sprite_asteroid, 52+offsetX, int(meteorBY), 0)
   display.blit(sprite_asteroid, 104+offsetX, int(meteorCY), 0)
@@ -668,20 +664,20 @@ def game():
 
 def posBoxX():
     if select == 0 or select == 3 or select == 5:
-        return(0)
+        return 0
     elif select == 1 or select == 6:
-        return(43)
+        return 43
     else:
-        return(86)
+        return 86
 
 def posBoxY():
     global select
     if select <= 2:
-        return(0)
+        return 0
     elif select == 3 or select == 4:
-        return(43)
+        return 43
     else:
-        return(86)
+        return 86
 
 def minigame(aPressed=False): #nedovršeno
   global menu, select, lives, livesTick, cupsList
@@ -693,8 +689,8 @@ def minigame(aPressed=False): #nedovršeno
         (00, 43),           (86, 43),
         (00, 86), (43, 86), (86, 86)
     )
-    for x, y in _cupPos:
-        display.blit(sprite_cup, x+offsetX, y, 0)
+    for cupx, cupy in _cupPos:
+        display.blit(sprite_cup, cupx+offsetX, cupy, 0)
     item = "A:"
     item2 = lang[10]
     item3 = "B:"
@@ -731,7 +727,7 @@ def minigame(aPressed=False): #nedovršeno
       menu = 0
 
 def buymenu():
-  global startValue, targetValue, step, mod, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value
+  global select, x, menu, laser, meteors, coinsUpg, value
   display.fill(16)
   display.blit(sprite_coin, 0+offsetX, 0, 0)
   display.text(str(money), 13+offsetX, 0, 65535)
@@ -743,7 +739,7 @@ def buymenu():
   shopitem()
 
 def buyscrollr(startValue, targetValue, step):
-  global mod, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value
+  global select, x, menu, laser, meteors, coinsUpg, value
   i = startValue
   while i != targetValue:
     i = i - step 
@@ -759,7 +755,7 @@ def buyscrollr(startValue, targetValue, step):
     display.commit()
 
 def buymenu2(startValue, targetValue, step):
-  global mod, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value
+  global select, x, menu, laser, meteors, coinsUpg, value
   i = startValue
   while i != targetValue:
     i = i - step
@@ -773,7 +769,7 @@ def buymenu2(startValue, targetValue, step):
     display.commit()
 
 def shopitem():
-  global startValue, targetValue, step, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value, temp, fastl
+  global select, x, menu, laser, meteors, coinsUpg, value, fastl
   display.blit(sprite_coin, 0+offsetX, 0, 0)
   display.text(str(money), 13+offsetX, 0, 65535)
   if select == 0:
@@ -831,7 +827,7 @@ def shopitem():
   display.commit()
 
 def helps():
-  global menu, money, multi, coinsUpg, cooldown, item, item2, item3
+  global menu, money, multi, coinsUpg
   menu = 3
   display.fill(0)
   display.blit(sprite_coin, 0+offsetX, 0, 0)
@@ -865,44 +861,43 @@ def helps():
   display.commit()
 
 def gamePrep():
-	global select, menu, shipX, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, lives, meteors, selectMeteor, mAH, mBH, mCH
-	select = 0
-	menu = 0
-	shipX = -4
-	meteorAY = -40
-	mAH = 3
-	meteorBY = -40
-	mBH = 3
-	meteorCY = -40
-	mCH = 3
-	meteorsShotInSession = 0
-	fVA = 2
-	fVB = 3
-	fVC = 3
-	lives = 1
-	if meteors == 0:
-	    selectMeteor = [0, 1, 0]
-	elif meteors == 1:
-	    selectMeteor = [1, 0, 1]
-	elif meteors == 2:
-	    selectMeteor = [1, 1, 1]
-	shuffleMeteors()
-	game()
+  global select, menu, shipX, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, lives, meteors, selectMeteor, mAH, mBH, mCH
+  select = 0
+  menu = 0
+  shipX = -4
+  meteorAY = -40
+  mAH = 3
+  meteorBY = -40
+  mBH = 3
+  meteorCY = -40
+  mCH = 3
+  meteorsShotInSession = 0
+  fVA = 2
+  fVB = 3
+  fVC = 3
+  lives = 1
+  if meteors == 0:
+      selectMeteor = [0, 1, 0]
+  elif meteors == 1:
+      selectMeteor = [1, 0, 1]
+  elif meteors == 2:
+      selectMeteor = [1, 1, 1]
+  shuffleMeteors()
+  game()
 
 def selectModulo():
   global emulated, networks
   if menu == 1:
-    return(6)
+    return 6
   elif menu == 5:
-    if emulated: return(5)
-    else: return(6)
+    return 5+(not emulated)
   elif menu == 6 or menu == 12:
-    return(3)
+    return 3
   elif menu == 7:
-    return(3)
+    return 3
   elif menu == 11:
     temp = len(networks)+1
-    return(temp)
+    return temp
 
 def drawlaser(untilWhere):
     global shipX, fastl
@@ -949,7 +944,7 @@ def shootlaser():
         shuffleMeteors()
 
 def langSelect():
-  global startValue, targetValue, step, mod, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value
+  global select, x, menu, laser, meteors, coinsUpg, value
   display.fill(16)
   display.text(lang[33], 64-len(lang[33])*4+offsetX, 0, 65535)
   display.text("English", 128-len("English")*8+offsetX, (0-select+4)*15, 65535)
@@ -975,7 +970,7 @@ def wifi_connect_request():
     machine.soft_reset()
 
 def downButton():
-  global startValue, targetValue, step, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value
+  global select, x, menu, laser, meteors, coinsUpg, value
   if selectModulo():
     select = (select+1)%selectModulo()
     scroll()
@@ -984,7 +979,7 @@ def downButton():
 buttons.on_press(Buttons.Down, downButton)
 
 def upButton():
-  global startValue, targetValue, step, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value
+  global select, x, menu, laser, meteors, coinsUpg, value
   if selectModulo():
     select = (select-1)%selectModulo()
     scroll()
@@ -993,7 +988,7 @@ def upButton():
 buttons.on_press(Buttons.Up, upButton)
 
 def aButton():
-  global ssid, pswd, fastl, tone, code, step, select, i, x, menu, money, item, laser, item2, meteors, coinsUpg, value, shipX, shipPos, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, cooldown, inCooldown, multi, lang
+  global ssid, pswd, fastl, tone, code, select, x, menu, money, laser, meteors, coinsUpg, value, shipX, shipPos, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, inCooldown, multi, lang
   if menu == 0:
     shootlaser()
   elif menu == 1:
@@ -1131,7 +1126,7 @@ def aButton():
           LVK.init()
       elif select == 2:
           print(ssid,pswd)
-          if not (ssid == None or pswd == None):
+          if not (ssid is None or pswd is None):
               wifi_connect_request()
   elif menu == 8:
       LVK.select()
@@ -1192,7 +1187,7 @@ def menuButton():
 buttons.on_press(Buttons.C, menuButton)
 
 def bButton():
-  global startValue, targetValue, step, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value
+  global select, menu, laser, meteors, coinsUpg, value
   if menu == 2:
     menu = 1
     select = 1
@@ -1211,7 +1206,7 @@ def bButton():
     mainmenu()
     display.text(">",0+offsetX,60,65535)
     display.commit()
-  elif menu >= 6 and menu < 8:
+  elif 6 <= menu < 8:
     menu = 5
     select = 0
     mainmenu2()
@@ -1235,48 +1230,43 @@ def bButton():
 buttons.on_press(Buttons.B, bButton)
 
 def rightButton():
-	global startValue, targetValue, step, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value, shipX, shipXchngBy
-	if menu == 0:
-	  shipX = shipX + shipXchngBy
-	  if shipX > 100:
-	    shipX = 100
-	  if tone: piezo.tone(200, 50)
-	  game()
-	elif menu == 2:
-	  buymenu2(16, 0, 2)
-	  buyscrollr(0, -72, 3)
-	  buymenu2(0, 16, -2)
-	  select = (select+1)%4
-	  buymenu()
-	  shopitem()
-	elif menu == 8:
-	  LVK.rightPress()
+  global select, x, menu, laser, meteors, coinsUpg, value, shipX, shipXchngBy
+  if menu == 0:
+    shipX = shipX + shipXchngBy
+    if shipX > 100:
+      shipX = 100
+    if tone: piezo.tone(200, 50)
+    game()
+  elif menu == 2:
+    buymenu2(16, 0, 2)
+    buyscrollr(0, -72, 3)
+    buymenu2(0, 16, -2)
+    select = (select+1)%4
+    buymenu()
+    shopitem()
+  elif menu == 8:
+    LVK.rightPress()
 buttons.on_press(Buttons.Right, rightButton)
 
 def leftButton():
-	global startValue, targetValue, step, select, i, x, menu, item, laser, item2, meteors, coinsUpg, value, shipX, shipXchngBy
-	if menu == 0:
-	  shipX = shipX - shipXchngBy
-	  if shipX < -4:
-	    shipX = -4
-	  if tone: piezo.tone(200, 50)
-	  game()
-	elif menu == 2:
-	  buymenu2(16, 0, 2)
-	  buyscrollr(0, 72, -3)
-	  buymenu2(0, 16, -2)
-	  select = (select-1)%4
-	  buymenu()
-	  shopitem()
-	elif menu == 8:
-	  LVK.leftPress()
+  global select, x, menu, laser, meteors, coinsUpg, value, shipX, shipXchngBy
+  if menu == 0:
+    shipX = shipX - shipXchngBy
+    if shipX < -4:
+      shipX = -4
+    if tone: piezo.tone(200, 50)
+    game()
+  elif menu == 2:
+    buymenu2(16, 0, 2)
+    buyscrollr(0, 72, -3)
+    buymenu2(0, 16, -2)
+    select = (select-1)%4
+    buymenu()
+    shopitem()
+  elif menu == 8:
+    LVK.leftPress()
 buttons.on_press(Buttons.Left, leftButton)
 
-select = 0
-menu = 1
-laser = 0
-meteors = 0
-coinsUpg = 0
 print('Meteor Shooter',version)
 print('Za STEMIovu Školu budućnosti')
 print('GitHub: https://github.com/MrUsername7/MeteorShooter')
