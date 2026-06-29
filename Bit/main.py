@@ -31,13 +31,14 @@ try:
 except NameError:
     emulated = True
 from sprite_data import *
+skin = 0
 sprite_coin = FrameBuffer(coinSprite, 11, 11, RGB565)
 sprite_asteroid = FrameBuffer(asteroidSprite, 27, 25, RGB565)
 sprite_cup = FrameBuffer(cupSprite, 40, 40, RGB565)
-sprite_ship = FrameBuffer(shipSkinSprite[0][0], 32, 48, RGB565)
-sprite_ship_transparent = shipSkinSprite[0][1]
-sprite_laser = FrameBuffer(laserSkinSprite[0][0], 3, 6, RGB565)
-sprite_laser_transparent = laserSkinSprite[0][1]
+sprite_ship = FrameBuffer(shipSkinSprite[skin][0], 32, 48, RGB565)
+sprite_ship_transparent = shipSkinSprite[skin][1]
+sprite_laser = FrameBuffer(laserSkinSprite[skin][0], 3, 6, RGB565)
+sprite_laser_transparent = laserSkinSprite[skin][1]
 sprite_life2times = FrameBuffer(life2timesSprite, 31, 10, RGB565)
 sprite_life = FrameBuffer(lifeSprite, 11, 10, RGB565)
 sprite_alien = FrameBuffer(alienSprite, 22, 29, RGB565)
@@ -361,13 +362,13 @@ meteorsShotInSession = 0
 fVA = 1 #fall value a,b,c
 fVB = 2
 fVC = 3
-inCooldown = False
 multi = 1
 flicker = False
 cupsList = [0,0,0,0,1,1,1,2] #  0 su vanzemaljci, 1 su +1 život, a 2 su +2 života
 tone = True
 code = 5
-version = "1.3.4 'EPSILON'"
+version = "1.3.5 'ZETA'"
+version_type = 'DEVEX' #DEVeloper EXchange
 lives = 1
 livesTick = 1
 totalDistance = 0
@@ -476,6 +477,14 @@ def startup():
         mainmenu()
         display.text(str(">"), 0+offsetX, 60, 65535)
         display.commit()
+
+def setskin():
+    global skin, sprite_ship, sprite_ship_transparent, sprite_laser, sprite_laser_transparent
+    skin = (skin+1)%3
+    sprite_ship = FrameBuffer(shipSkinSprite[skin][0], 32, 48, RGB565)
+    sprite_ship_transparent = shipSkinSprite[skin][1]
+    sprite_laser = FrameBuffer(laserSkinSprite[skin][0], 3, 6, RGB565)
+    sprite_laser_transparent = laserSkinSprite[skin][1]
 
 def shuffle(array):
     global lives, select, livesTick
@@ -598,7 +607,8 @@ def minigameSetup():
 def drawgame():
   global shipX, meteorAY, meteorBY, meteorCY, money, coinsUpg, multi, lives, livesTick, shipPos
   display.fill(0)
-  display.blit(sprite_ship, shipX+3+offsetX, 80, sprite_ship_transparent)
+  #jeote ne zna kako maskati
+  display.blit(sprite_ship, shipX+3+offsetX, 80, shipSkinSprite[skin][1]) #ni ovo ne radi NE KONTAM ZAŠ JHZIKGHDUZIGGGJIDMNTII7RT8EHCGFZISUO
   display.blit(sprite_asteroid, 0+offsetX, int(meteorAY), 0)
   display.blit(sprite_asteroid, 52+offsetX, int(meteorBY), 0)
   display.blit(sprite_asteroid, 104+offsetX, int(meteorCY), 0)
@@ -900,13 +910,13 @@ def selectModulo():
     return temp
 
 def drawlaser(untilWhere):
-    global shipX, fastl
-    i = 79
-    while not i <= untilWhere+20:
-      drawgame()
-      display.rect(shipX+15+offsetX, i, 3, 6, 63488, 1)
-      display.commit()
-      i -= fastl+3
+  global shipX, fastl
+  i = 79
+  while not i <= untilWhere+20:
+    drawgame()
+    display.blit(sprite_laser, shipX+15+offsetX, i, sprite_laser_transparent)
+    display.commit()
+    i -= fastl+3
 
 def shootlaser():
   global fastl, inCooldown, meteorAY, meteorBY, meteorCY, money, coinsUpg, multi, meteorsShotInSession, shipPos, tone, mAH, mBH, mCH
@@ -1182,6 +1192,9 @@ def menuButton():
     display.commit()
     import webrepl
     webrepl.start(password='1234')
+  elif menu == 5:
+      setskin()
+      print(f'Skin set to {skin}.')
   elif menu == 8:
     LVK.shiftLock()
 buttons.on_press(Buttons.C, menuButton)
@@ -1267,6 +1280,7 @@ def leftButton():
     LVK.leftPress()
 buttons.on_press(Buttons.Left, leftButton)
 
+"""
 print('Meteor Shooter',version)
 print('Za STEMIovu Školu budućnosti')
 print('GitHub: https://github.com/MrUsername7/MeteorShooter')
@@ -1306,3 +1320,26 @@ while running:
       display.commit()
       if menu == 3:
         help()
+"""
+print('fallback, while True loop escaped')
+print(b"raw REPL; CTRL-B to exit\r\n")
+strings = [
+ ################     < ovo su 16 hashtaga koji označuju koliko stane na ekran
+'why did you put',    # samo pomažu
+'this on your Bit',
+'or whichever',
+'device?',
+'this is a',
+version_type,
+'version so...',
+'',
+'GET OUT'
+]
+for i in range(0,len(strings)):
+    if not strings[i] == version_type:
+        display.text(strings[i], 0, i*8, 65535)
+    else:
+        display.text(strings[i], 0, i*8, 0x0ff0)
+display.text(version, 0, 112, 0xf00f)
+display.text(version_type, 0, 120, 0xf00f)
+display.commit()
