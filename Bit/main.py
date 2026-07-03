@@ -9,15 +9,16 @@ menus:
 6: langselect
 7: networkMenu
 8: keyboard
-9: leaderboard #reserved
+9: online #reserved
 10: minigame
 11: listNetworks
 12: langSelectOnStartup
 """
 
-version = "1.4.0 'ZETA'"
+version = "1.4.1 'ETA'"
 # DEVEX znači DEVeloper EXchange
 version_type = 'RELEASE'
+version_type = version_type.upper()
 
 import network, gc
 gc.collect()
@@ -33,7 +34,9 @@ begin()
 from sprite_data import *
 skin = 0
 sprite_coin = FrameBuffer(coinSprite, 11, 11, RGB565)
-sprite_asteroid = FrameBuffer(asteroidSprite, 27, 25, RGB565)
+meteor_type = [0,0,0]
+sprite_asteroid = [FrameBuffer(asteroidTypeSprite[meteor_type[0]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[1]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[2]][0], 27, 25, RGB565)]
+sprite_asteroid_transparent = [asteroidTypeSprite[meteor_type[0]][1], asteroidTypeSprite[meteor_type[1]][1], asteroidTypeSprite[meteor_type[2]][1]]
 sprite_cup = FrameBuffer(cupSprite, 40, 40, RGB565)
 sprite_ship = FrameBuffer(shipSkinSprite[skin][0], 32, 48, RGB565)
 sprite_ship_transparent = shipSkinSprite[skin][1]
@@ -237,7 +240,7 @@ lang_en = [
 "SSID",
 "Password",
 "Connect",
-"Leaderboard",
+"Online",
 'Save',
 'Erase data',
 'Reset',
@@ -283,7 +286,7 @@ lang_hr = [
 "SSID",
 "Zaporka",
 "Spoji se",
-"Rang-lista",
+"Online",
 'Spremi',
 'Obrisi podatke',
 'Ponovno pokreni',
@@ -329,7 +332,7 @@ lang_de = [
 'SSID',
 'Passwort',
 'Verbinden',
-'Bestenliste',
+'Online',
 'Speichern',
 'Daten loeschen',
 'Zuruecksetzen',
@@ -549,13 +552,17 @@ def mainmenu2():
   display.rect(0+offsetX, 0, 128, 8, 16, 1)
   display.text(lang[7], 64-len(lang[7])*4+offsetX, 0, 65535)
 
+def onlineMenu():
+    for i in range(5):
+        draw_new_menu_items(f'item {i+1}', i)
+
 def networkMenu():
     #lang[35] je ssid i lang[36] je lozinka
     global menu, select
     display.fill(16)
-    display.text(lang[35], 64-len(lang[35])*4+offsetX, (0-select+4)*15, 65535)
-    display.text(lang[36], 64-len(lang[36])*4+offsetX, (0-select+5)*15, 65535)
-    display.text(lang[37], 64-len(lang[37])*4+offsetX, (0-select+6)*15, 65535)
+    draw_new_menu_items(lang[35], 0)
+    draw_new_menu_items(lang[36], 1)
+    draw_new_menu_items(lang[37], 2)
     display.rect(0+offsetX, 0, 128, 8, 16, 1)
     display.text(lang[26], 64-len(lang[26])*4+offsetX, 0, 65535)
 
@@ -570,9 +577,9 @@ def listNetworks():
     global networks, wlan
     display.fill(16)
     display.text(lang[35], 64-len(lang[35])*4+offsetX, 0, 65535)
-    display.text(lang[42], 64-len(lang[42])*4+offsetX, (0-select+4)*15, 65535)
-    for i in range(5,len(networks)+5):
-        display.text(networks[i-5][0].decode(), 64-len(networks[i-5][0].decode())*4+offsetX, (0-select+i)*15, 65535)
+    draw_new_menu_items(lang[42], 0)
+    for i in range(len(networks)):
+        draw_new_menu_items(networks[i][0].decode(), i-5)
 
 def appropriateMenu():
   if menu == 1:
@@ -583,6 +590,8 @@ def appropriateMenu():
     langSelect()
   elif menu == 7:
     networkMenu()
+  elif menu == 9:
+    onlineMenu()
   elif menu == 11:
     listNetworks()
   elif menu == 12:
@@ -605,9 +614,9 @@ def drawgame():
   global shipX, meteorAY, meteorBY, meteorCY, money, coinsUpg, multi, lives, livesTick, shipPos
   display.fill(0)
   display.blit(sprite_ship, shipX+3+offsetX, 80, sprite_ship_transparent)
-  display.blit(sprite_asteroid, 0+offsetX, int(meteorAY), 0)
-  display.blit(sprite_asteroid, 52+offsetX, int(meteorBY), 0)
-  display.blit(sprite_asteroid, 104+offsetX, int(meteorCY), 0)
+  display.blit(sprite_asteroid[0], 0+offsetX, int(meteorAY), sprite_asteroid_transparent[0])
+  display.blit(sprite_asteroid[1], 52+offsetX, int(meteorBY), sprite_asteroid_transparent[1])
+  display.blit(sprite_asteroid[2], 104+offsetX, int(meteorCY), sprite_asteroid_transparent[2])
   shipPos = ((shipX+4)/52)+1
   display.blit(sprite_coin, 0+offsetX, 0, 0)
   display.text(str(round(money)), 13+offsetX, 0, 65535)
@@ -772,6 +781,7 @@ def shopitem():
   global select, x, menu, laser, meteors, coinsUpg, value, fastl
   display.blit(sprite_coin, 0+offsetX, 0, 0)
   display.text(str(money), 13+offsetX, 0, 65535)
+  item2 = 'ERROR'
   if select == 0:
     item = lang[13]
     item2 = lang[14]
@@ -816,13 +826,13 @@ def shopitem():
         value = 9999
   else:
     item = 'ERR01'
-  display.text(str(item), 64 - len(item) * 4+offsetX, 56, 65535)
-  display.text(str(item2), 64 - len(item2) * 4+offsetX, 64, 65535)
+  display.text(str(item), 64-len(item)*4+offsetX, 56, 65535)
+  display.text(str(item2), 64-len(item2)*4+offsetX, 64, 65535)
   if value == 9999:
     temp = "MAX"
   else:
     temp = value
-  display.text(str(temp), 64-len(str(temp)) * 4+offsetX, 96, 65535)
+  display.text(str(temp), 64-len(str(temp))*4+offsetX, 96, 65535)
   display.commit()
 
 def helps():
@@ -836,6 +846,9 @@ def helps():
   display.text(str(coinsUpg+1), 0+offsetX, 12, 65535)
   display.text(str(lives)+",0", 11+offsetX, 31, 65535)
   display.blit(sprite_life, 0+offsetX, 31, 0)
+  item = 'ERROR'
+  item2 = 'ERROR'
+  item3 = 'ERROR'
   if select == 0:
     display.text(lang[18], 40+offsetX, 0, 65535)
     display.text(lang[19], 40+offsetX, 8, 65535)
@@ -1266,64 +1279,67 @@ def leftButton():
     LVK.leftPress()
 buttons.on_press(left_button, leftButton)
 
-print('Meteor Shooter',version)
-print('Za STEMIovu Školu budućnosti')
-print('GitHub: https://github.com/MrUsername7/MeteorShooter')
-startup()
-if menu == 1:
-    mainmenu()
-    display.text(str(">"),0+offsetX,60,65535)
-    display.commit()
-while running:
-  buttons.scan()
-  if menu == 0:
-    temp = random.randint(0,2)
-    if temp == 0 and selectMeteor[0]:
-      meteorAY += random.randint(fVA,fVB)/fVC
-    elif temp == 1 and selectMeteor[1]:
-      meteorBY += random.randint(fVA,fVB)/fVC
-    elif temp == 2 and selectMeteor[2]:
-      meteorCY += random.randint(fVA,fVB)/fVC
-    if meteorAY >= 130:
-      mAH = 3
-      meteorAY = -40
-      shuffleMeteors()
-    elif meteorBY >= 130:
-      mBH = 3
-      meteorBY = -40
-      shuffleMeteors()
-    elif meteorCY >= 130:
-      mCH = 3
-      meteorCY = -40
-      shuffleMeteors()
-    game()
-  elif menu == 10:
-      minigame()
-  if flicker:
-    if menu == 0 or menu == 3:
-      display.fill(0)
-      display.commit()
-      if menu == 3:
-        help()
+allowed_versions = ['RELEASE', 'BETA', 'ALPHA']
 
-print('fallback, while True loop escaped')
-strings = [
- ################     < ovo su 16 hashtaga koji označuju koliko stane na ekran
-'why did you put',    # samo pomažu
-'this on your Bit',
-'or whichever',
-'device?',
-'this is a',
-version_type,
-'version so...',
-'',
-'GET OUT'
-]
-for i in range(0,len(strings)):
-    if not strings[i] == version_type:
-        display.text(strings[i], 0, i*8, 65535)
-    else:
-        display.text(strings[i], 0, i*8, 0x0ff0)
-display.text(version, 0, 112, 0xf00f)
-display.text(version_type, 0, 120, 0xf00f)
-display.commit()
+if version_type in allowed_versions:
+  print('Meteor Shooter',version)
+  print('Za STEMIovu Školu budućnosti')
+  print('GitHub: https://github.com/MrUsername7/MeteorShooter')
+  startup()
+  if menu == 1:
+      mainmenu()
+      display.text(str(">"),0+offsetX,60,65535)
+      display.commit()
+  while running:
+    buttons.scan()
+    if menu == 0:
+      temp = random.randint(0,2)
+      if temp == 0 and selectMeteor[0]:
+        meteorAY += random.randint(fVA,fVB)/fVC
+      elif temp == 1 and selectMeteor[1]:
+        meteorBY += random.randint(fVA,fVB)/fVC
+      elif temp == 2 and selectMeteor[2]:
+        meteorCY += random.randint(fVA,fVB)/fVC
+      if meteorAY >= 130:
+        mAH = 3
+        meteorAY = -40
+        shuffleMeteors()
+      elif meteorBY >= 130:
+        mBH = 3
+        meteorBY = -40
+        shuffleMeteors()
+      elif meteorCY >= 130:
+        mCH = 3
+        meteorCY = -40
+        shuffleMeteors()
+      game()
+    elif menu == 10:
+        minigame()
+    if flicker:
+      if menu == 0 or menu == 3:
+        display.fill(0)
+        display.commit()
+        if menu == 3:
+          help()
+else:
+  print('fallback, while True loop escaped')
+  strings = [
+   ################****     < ovo su 16 hashtaga i 4 zvjezdice koji označuju koliko stane na ekran
+  'why did you put ',        # koristi hashtagove za Bit/Codee, a sve za Chatter
+  'this on your Bit',
+  'or whichever    ',
+  'device?         ',
+  'this is a       ',
+ f'{version_type}  ',
+  'version so...   ',
+  '                ',
+  'GET OUT         '
+  ]
+  for i in range(0,len(strings)):
+      if not strings[i] == version_type:
+          display.text(strings[i], 0, i*8, 65535)
+      else:
+          display.text(strings[i], 0, i*8, 0x0ff0)
+  display.text(version, 0, 112, 0xf00f)
+  display.text(version_type, 0, 120, 0xf00f)
+  display.commit()
