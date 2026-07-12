@@ -15,7 +15,7 @@ menus:
 12: langSelectOnStartup
 """
 
-version = "1.4.1 'ETA'"
+version = "MS 1.4.2 'THETA'"
 # DEVEX znači DEVeloper EXchange
 version_type = 'RELEASE'
 version_type = version_type.upper()
@@ -277,7 +277,7 @@ lang_hr = [
 "Mreza"+connected(),
 "A: Pucaj",
 "Menu: Izlaz",
-"< and >: Pomici",
+"< i >: Pomici",
 "(A) Ajmo igrati!",
 "Brzi",
 "Prijevodi:",
@@ -846,9 +846,6 @@ def helps():
   display.text(str(coinsUpg+1), 0+offsetX, 12, 65535)
   display.text(str(lives)+",0", 11+offsetX, 31, 65535)
   display.blit(sprite_life, 0+offsetX, 31, 0)
-  item = 'ERROR'
-  item2 = 'ERROR'
-  item3 = 'ERROR'
   if select == 0:
     display.text(lang[18], 40+offsetX, 0, 65535)
     display.text(lang[19], 40+offsetX, 8, 65535)
