@@ -1,0 +1,1036 @@
+"""
+menus:
+0: game
+1: mainmenu
+2: shop
+3: helps
+4: about
+5: mainmenu2 (settings)
+6: langselect
+7: none
+8: keyboard
+9: none
+10: minigame
+11: none
+12: langSelectOnStartup
+"""
+
+version = "1.4.1 'ETA'"
+# DEVEX znači DEVeloper EXchange
+version_type = 'RELEASE'
+version_type = version_type.upper()
+
+import gc
+gc.collect()
+from Codee import *
+up_button, down_button, left_button, right_button, a_button, b_button, menu_button = Buttons.A, Buttons.B, Buttons.A, Buttons.B, Buttons.C, Buttons.D, Buttons.D
+from framebuf import *
+from random import randrange
+import math, random, array, time
+begin()
+from sprite_data import *
+skin = 0
+sprite_coin = FrameBuffer(coinSprite, 11, 11, RGB565)
+meteor_type = [0,0,0]
+sprite_asteroid = [FrameBuffer(asteroidTypeSprite[meteor_type[0]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[1]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[2]][0], 27, 25, RGB565)]
+sprite_asteroid_transparent = [asteroidTypeSprite[meteor_type[0]][1], asteroidTypeSprite[meteor_type[1]][1], asteroidTypeSprite[meteor_type[2]][1]]
+sprite_cup = FrameBuffer(cupSprite, 40, 40, RGB565)
+sprite_ship = FrameBuffer(shipSkinSprite[skin][0], 32, 48, RGB565)
+sprite_ship_transparent = shipSkinSprite[skin][1]
+sprite_laser = FrameBuffer(laserSkinSprite[skin][0], 3, 6, RGB565)
+sprite_laser_transparent = laserSkinSprite[skin][1]
+sprite_life2times = FrameBuffer(life2timesSprite, 31, 10, RGB565)
+sprite_life = FrameBuffer(lifeSprite, 11, 10, RGB565)
+sprite_alien = FrameBuffer(alienSprite, 22, 29, RGB565)
+sprite_qr = FrameBuffer(qrSprite, 128, 128, MONO_HLSB)
+
+sprite_hr = FrameBuffer(hrSprite, 15, 8, RGB565)
+sprite_en = FrameBuffer(enSprite, 15, 8, RGB565)
+sprite_de = FrameBuffer(deSprite, 15, 8, RGB565)
+
+offsetX = 0
+
+def connected():
+  return ''
+
+lang_en = [
+"for Bit",
+"Textures:",
+"Programming:",
+"EMULATED",
+"(D) Back",
+"Play",
+"Shop",
+"Settings",
+"About",
+"Sound: ",
+"Confirm",
+"Change",
+"selection",
+'Stronger',
+'Laser',
+'More',
+'Meteors',
+'Coins',
+"< Money and",
+"progress",
+"multiplier",
+"Help page ",
+"(C) Continue...",
+"(D) Skip",
+'< "More Coins"',
+"upgrade",
+"Network"+connected(),
+"C: Shoot",
+"D: Exit",
+"A and B: Move",
+"(C) Let's play!",
+"Faster",
+"Translations:",
+"Language",
+"(!!!)",
+"SSID",
+"Password",
+"Connect",
+"Online",
+'Save',
+'Erase data',
+'Reset',
+'Refresh'
+]
+
+lang_hr = [
+"za Bit",
+"Teksture:",
+"Programiranje:",
+"EMULIRANO",
+"(D) Nazad",
+"Igraj",
+"Trgovina",
+"Postavke",
+"O",
+"Zvuk: ",
+"Potvrdi",
+"Promjeni",
+"odabir",
+'Jaci',
+'Laser',
+'Vise',
+'Meteora',
+'Novaca',
+"< Novci i",
+"multiplikator",
+"napretka",
+"Pomocna str. ",
+"(C) Nastavak...",
+"(D) Preskoci",
+'< "Vise Novaca"',
+"nadogradnja",
+"Mreza"+connected(),
+"C: Pucaj",
+"D: Izlaz",
+"A and B: Pomici",
+"(C) Ajmo igrati!",
+"Brzi",
+"Prijevodi:",
+"Jezik",
+"(!!!)",
+"SSID",
+"Zaporka",
+"Spoji se",
+"Online",
+'Spremi',
+'Obrisi podatke',
+'Ponovno pokreni',
+'Osvjezi'
+]
+
+lang_de = [
+'fuer Bit',
+'Texturen:',
+'Programmierung:',
+'EMULIERT',
+'(D) Zurueck',
+'Spielen',
+'Shop',
+'Einstellungen',
+'Ueber',
+'Klang: ',
+'Bestaetigen',
+'Aendern',
+'Auswahl',
+'Staerker',
+'Laser',
+'Mehr',
+'Meteore',
+'Muenzen',
+'< Geld und',
+'Fortschritt',
+'Multiplikator',
+'Hilfeseite',
+'(C) Weiter...',
+'(D) ueberspringen',
+'< "Mehr Muenzen"',
+'Upgrade',
+'Netzwerk'+connected(),
+'C: Schiessen',
+'D: Beenden',
+'A und B: Bewegen',
+"(C) Los geht's!",
+'Schneller',
+'Uebersetzungen:',
+'Sprache',
+'(!!!)',
+'SSID',
+'Passwort',
+'Verbinden',
+'Online',
+'Speichern',
+'Daten loeschen',
+'Zuruecksetzen',
+'Aktualisieren'
+]
+
+lang_es = []
+
+lang_fr = []
+
+select = 0
+x = None
+menu = 1
+money = 0
+laser = 0
+meteors = 0
+coinsUpg = 0
+value = 0
+shipPos = 1
+shipX = -4
+shipXchngBy = 52 #tu mijenjaj brzinu
+meteorAY = -40
+mAH = 3 #meteorAHealth
+meteorBY = -40
+mBH = 3
+meteorCY = -40
+mCH = 3
+meteorKill = 63
+meteorNoKill = 115
+meteorsShotInSession = 0
+fVA = 1 #fall value a,b,c
+fVB = 2
+fVC = 3
+multi = 1
+flicker = False
+cupsList = [0,0,0,0,1,1,1,2] #  0 su vanzemaljci, 1 su +1 život, a 2 su +2 života
+tone = True
+code = 5
+lives = 1
+livesTick = 1
+totalDistance = 0
+lang = None
+fastl = 0
+selectMeteor = [0, 1, 0]
+running = True
+
+def save():
+  with open('data.txt', 'w') as f:
+    global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl
+    f.write(str(money)+'\n')
+    f.write(str(laser)+'\n')
+    f.write(str(meteors)+'\n')
+    f.write(str(coinsUpg)+'\n')
+    f.write(str(tone)+'\n')
+    f.write(str(totalDistance)+'\n')
+    if lang == lang_en:
+      f.write('en\n')
+    elif lang == lang_hr:
+      f.write('hr\n')
+    elif lang == lang_de:
+      f.write('de\n')
+    elif lang == lang_es:
+      f.write('es\n')
+    elif lang == lang_fr:
+      f.write('fr\n')
+    f.write(str(fastl)+'\n')
+
+def load():
+  try:
+    with open('data.txt', 'r') as f:
+      global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl
+      money = float(f.readline().strip())
+      laser = int(f.readline().strip())
+      meteors = int(f.readline().strip())
+      coinsUpg = int(f.readline().strip())
+      tone = f.readline().strip() == 'True'
+      totalDistance = int(f.readline().strip())
+      lang = f.readline().strip()
+      if lang == "en":
+        lang = lang_en[:]
+      elif lang == "hr":
+        lang = lang_hr[:]
+      elif lang == "de":
+        lang = lang_de[:]
+      elif lang == "es":
+        lang = lang_es[:]
+      elif lang == "fr":
+        lang = lang_fr[:]
+      fastl = int(f.readline().strip())
+  except:
+    pass
+
+def langSelectOnStartup():
+  global select, menu, laser, meteors, coinsUpg, value
+  display.fill(0)
+  display.text('SETUP '+lang[33], 64-len('SETUP '+lang[33])*4+offsetX, 0, 65535)
+  display.text("English", 128-len("English")*8+offsetX, (0-select+4)*15, 65535)
+  display.text("Hrvatski", 128-len("Hrvatski")*8+offsetX, (0-select+5)*15, 65535)
+  display.text("Deutsch "+lang[34], 128-len("Deutsch "+lang[34])*8+offsetX, (0-select+6)*15, 65535)
+  display.blit(sprite_en, 8+offsetX, (0-select+4)*15, 0)
+  display.blit(sprite_hr, 8+offsetX, (0-select+5)*15, 0)
+  display.blit(sprite_de, 8+offsetX, (0-select+6)*15, 65535)
+
+def startup():
+    display.fill(1234)
+    display.blit(sprite_hr, 113, 0, 0)
+    display.blit(sprite_en, 113, 8, 0)
+    display.blit(sprite_de, 113, 16, 65535)
+    for i in range(113,128,2):
+        display.pixel(i, 24, 0)
+    display.commit()
+    time.sleep(1)
+    global lang, menu
+    load()
+    if lang is None:
+        lang = lang_en[:]
+        menu = 12
+        langSelectOnStartup()
+        display.text('>', 0+offsetX, 60, 65535)
+        display.commit()
+    else:
+        save()
+        menu = 1
+        display.fill(0)
+        t1 = 'The Bit'
+        t2 = 'Superstars'
+        t3 = 'present...'
+        display.text(t1, 64-len(t1)*4+offsetX, 52, 65535)
+        display.text(t2, 64-len(t2)*4+offsetX, 60, 65535)
+        display.text(t3, 64-len(t3)*4+offsetX, 68, 65535)
+        display.commit()
+        time.sleep(1.25)
+        mainmenu()
+        display.text(str(">"), 0+offsetX, 60, 65535)
+        display.commit()
+
+def shuffle(array):
+    global lives, select, livesTick
+    if array == cupsList:
+        select = 0
+        if lives > 1:
+            livesTick = 125
+        lives -= 1
+    for i in range(len(array) - 1, 0, -1):
+        j = randrange(i + 1)
+        array[i], array[j] = array[j], array[i]
+
+def shuffleMeteors():
+    global selectMeteor, meteorAY, meteorBY, meteorCY
+    while True:
+        shuffle(selectMeteor)
+        if (((meteorAY <= -25 or meteorAY >= 128) or selectMeteor[0]) and
+            ((meteorBY <= -25 or meteorBY >= 128) or selectMeteor[1]) and
+            ((meteorCY <= -25 or meteorCY >= 128) or selectMeteor[2])):
+            break
+
+def draw_new_menu_items(string, idx_in_menu):
+    display.text(string, 64-len(string)*4+offsetX, (0-select+(idx_in_menu+4))*15, 65535)
+
+def about():
+  global menu, select
+  menu = 4
+  select = 0
+  display.fill(16)
+  display.text("Meteor Shooter", 8+offsetX, 0, 65535)
+  display.text(lang[0], 36+offsetX, 8, 65535)
+  display.text(version, 0+offsetX, 20, 65535)
+  display.text(lang[1], 0+offsetX, 28, 65535)
+  display.text("Adrian", 8+offsetX, 36, 65535)
+  display.text(lang[2], 0+offsetX, 54, 65535)
+  display.text("Leon", 8+offsetX, 60, 65535)
+  display.text(lang[32], 0+offsetX, 76, 65535)
+  display.text("Leon", 8+offsetX, 84, 65535)
+  display.text(lang[4], 64-len(lang[4])*4+offsetX, 120, 65535)
+  display.commit()
+
+def mainmenu():
+  global select, x, menu, laser, meteors, coinsUpg, value
+  display.fill(16)
+  draw_new_menu_items(lang[5],0)
+  draw_new_menu_items(lang[6],1)
+  draw_new_menu_items(lang[7],2)
+  draw_new_menu_items(lang[8],3)
+  display.text('QR', 56+offsetX, (0-select+8)*15, 65535)
+  display.rect(0+offsetX, 0, 128, 8, 16, 1)
+  display.text("METEOR SHOOT>R", 8+offsetX, 0, 65535)
+
+def mainmenu2():
+  global select, x, menu, laser, meteors, coinsUpg, value, tone
+  display.fill(16)
+  temp = lang[9]+str(tone)
+  draw_new_menu_items(temp,0)
+  draw_new_menu_items(lang[33],1)
+  draw_new_menu_items(lang[39],2)
+  draw_new_menu_items(lang[40],3)
+  draw_new_menu_items(lang[41],4)
+  display.rect(0+offsetX, 0, 128, 8, 16, 1)
+  display.text(lang[7], 64-len(lang[7])*4+offsetX, 0, 65535)
+
+def appropriateMenu():
+  if menu == 1:
+    mainmenu()
+  elif menu == 5:
+    mainmenu2()
+  elif menu == 6:
+    langSelect()
+  elif menu == 12:
+    langSelectOnStartup()
+
+def scroll():
+  global menu
+  if menu == 1 or (5 <= menu <= 7) or (11 <= menu <= 12):
+    appropriateMenu()
+    display.text(">",0+offsetX,60,65535)
+    display.commit()
+
+def minigameSetup():
+  global livesTick, lives
+  shuffle(cupsList)
+  if livesTick == 0 and lives == 0:
+    minigame()
+
+def drawgame():
+  global shipX, meteorAY, meteorBY, meteorCY, money, coinsUpg, multi, lives, livesTick, shipPos
+  display.fill(0)
+  display.blit(sprite_ship, shipX+3+offsetX, 80, sprite_ship_transparent)
+  display.blit(sprite_asteroid[0], 0+offsetX, int(meteorAY), sprite_asteroid_transparent[0])
+  display.blit(sprite_asteroid[1], 52+offsetX, int(meteorBY), sprite_asteroid_transparent[1])
+  display.blit(sprite_asteroid[2], 104+offsetX, int(meteorCY), sprite_asteroid_transparent[2])
+  shipPos = ((shipX+4)/52)+1
+  display.blit(sprite_coin, 0+offsetX, 0, 0)
+  display.text(str(round(money)), 13+offsetX, 0, 65535)
+  display.text(str(coinsUpg+1), 0+offsetX, 12, 65535)
+  if multi > 1:
+    display.text(str("x"), 13 + len(str(round(money)))*8+offsetX, 0, 65535)
+    display.text(str(multi), 21 + len(str(round(money)))*8+offsetX, 0, 65535)
+  display.blit(sprite_life, 0+offsetX, 31, 0)
+  display.text(str(lives)+","+str(livesTick), 11+offsetX, 31, 65535)
+
+def game():
+  global totalDistance, livesTick, lives, shipX, meteorAY, meteorBY, meteorCY, shipPos, money, meteorKill, meteorNoKill, fVA, fVB, fVC, meteorsShotInSession, multi, menu
+  totalDistance += 1
+  drawgame()
+  if meteorsShotInSession == 0:
+    multi = 1
+    fVC = 7/4
+  elif meteorsShotInSession == 10:
+    if fVC != 5/4:
+      if tone: piezo.tone(500, 150)
+      if tone: piezo.tone(1000, 150)
+    fVC = 5/4
+  elif meteorsShotInSession == 25:
+    if fVA != 2:
+      if tone: piezo.tone(500, 150)
+      if tone: piezo.tone(1000, 150)
+    fVA = 2
+    fVB = 3
+  elif meteorsShotInSession == 40:
+    if fVC != 3/4:
+      if tone: piezo.tone(500, 150)
+      if tone: piezo.tone(1000, 150)
+    fVC = 3/4
+    multi = 5/4
+  elif meteorsShotInSession == 65:
+    if fVC != 3/5:
+      if tone: piezo.tone(500, 150)
+      if tone: piezo.tone(1000, 150)
+    fVC = 3/5
+    multi = 3/2
+  elif meteorsShotInSession == 100:
+    if fVC != 1:
+      if tone: piezo.tone(1500, 150)
+      if tone: piezo.tone(2000, 150)
+    fVC = 1
+    fVA = 5
+    fVB = 7
+    multi = 2
+  display.commit()
+  if livesTick == 0:
+    if shipPos == 1 and meteorNoKill > meteorAY > meteorKill:
+      minigameSetup()
+    elif shipPos == 2 and meteorNoKill > meteorBY > meteorKill:
+      minigameSetup()
+    elif shipPos == 3 and meteorNoKill > meteorCY > meteorKill:
+      minigameSetup()
+  if livesTick > 0:
+    livesTick -= 1
+
+def posBoxX():
+    if select == 0 or select == 3 or select == 5:
+        return 0
+    elif select == 1 or select == 6:
+        return 43
+    else:
+        return 86
+
+def posBoxY():
+    global select
+    if select <= 2:
+        return 0
+    elif select == 3 or select == 4:
+        return 43
+    else:
+        return 86
+
+def minigame(aPressed=False): #nedovršeno
+  global menu, select, lives, livesTick, cupsList
+  menu = 10
+  if not aPressed:
+    display.fill(0)
+    _cupPos = (
+        (00, 00), (43, 00), (86, 00),
+        (00, 43),           (86, 43),
+        (00, 86), (43, 86), (86, 86)
+    )
+    for cupx, cupy in _cupPos:
+        display.blit(sprite_cup, cupx+offsetX, cupy, 0)
+    item = "C:"
+    item2 = lang[10]
+    item3 = "B:"
+    item4 = lang[11]
+    item5 = lang[12]
+    display.text(item, 64-len(item)*4+offsetX, 48, 65535)
+    display.text(item2, 64-len(item2)*4+offsetX, 56, 65535)
+    display.text(item3, 64-len(item3)*4+offsetX, 64, 65535)
+    display.text(item4, 64-len(item4)*4+offsetX, 72, 65535)
+    display.text(item5, 64-len(item5)*4+offsetX, 80, 65535)
+    display.rect(posBoxX()+offsetX, posBoxY(), 40, 40, 65535, 0)
+    display.commit()
+  else:
+    for i in range(44,14,-1):
+      display.fill(0)
+      display.blit(sprite_cup, 44+offsetX, i, 0)
+      display.commit()
+    item = cupsList[select]
+    if item == 0:
+      display.blit(sprite_alien, 53+offsetX, 50, 0)
+    elif item == 1:
+      display.blit(sprite_life, 59+offsetX, 50, 0)
+    elif item == 2:
+      display.blit(sprite_life2times, 49+offsetX, 50, 0)
+    display.commit()
+    time.sleep(1)
+    lives += item
+    if lives == 0:
+      menuButton()
+    else:
+      livesTick = 125
+      menu = 0
+
+def buymenu():
+  global select, x, menu, laser, meteors, coinsUpg, value
+  display.fill(16)
+  display.blit(sprite_coin, 0+offsetX, 0, 0)
+  display.text(str(money), 13+offsetX, 0, 65535)
+  display.rect(36+offsetX, 36, 56, 56, 33808, 1)
+  display.rect(32+offsetX, 32, 64, 64, 0, 1)
+  display.rect(0+offsetX, 40, 16, 48, 0, 1)
+  display.rect(112+offsetX, 40, 16, 48, 0, 1)
+  shopitem()
+
+def buyscrollr(startValue, targetValue, step):
+  global select, x, menu, laser, meteors, coinsUpg, value
+  i = startValue
+  while i != targetValue:
+    i = i - step 
+    display.fill(16)
+    display.blit(sprite_coin, 0+offsetX, 0, 0)
+    display.text(str(money), 13+offsetX, 0, 65535)
+    display.rect(40 + i+offsetX, 40, 48, 48, 0, 1)
+    display.rect(-32 + i+offsetX, 40, 48, 48, 0, 1)
+    display.rect(112 + i+offsetX, 40, 48, 48, 0, 1)
+    display.rect(-72 + i+offsetX, 40, 16, 48, 0, 1)
+    display.rect(184 + i+offsetX, 40, 48, 48, 0, 1)
+    display.commit()
+
+def buymenu2(startValue, targetValue, step):
+  global select, x, menu, laser, meteors, coinsUpg, value
+  i = startValue
+  while i != targetValue:
+    i = i - step
+    display.fill(16)
+    display.blit(sprite_coin, 0+offsetX, 0, 0)
+    display.text(str(money), 13+offsetX, 0, 65535)
+    display.rect(int(40-i/2+offsetX), int(40-i/2),48+i,48+i,0,1)
+    display.rect(0+offsetX, 40, 16, 48, 0, 1)
+    display.rect(112+offsetX, 40, 16, 48, 0, 1)
+    display.commit()
+
+def shopitem():
+  global select, x, menu, laser, meteors, coinsUpg, value, fastl
+  display.blit(sprite_coin, 0+offsetX, 0, 0)
+  display.text(str(money), 13+offsetX, 0, 65535)
+  item2 = 'ERROR'
+  if select == 0:
+    item = lang[13]
+    item2 = lang[14]
+    if laser == 0:
+      value = 100
+    elif laser == 1:
+      value = 150
+    elif laser == 2:
+      value = 9999
+  elif select == 1:
+    item = lang[15]
+    item2 = lang[16]
+    if meteors == 0:
+      value = 50
+    elif meteors == 1:
+      value = 75
+    elif meteors == 2:
+      value = 9999
+  elif select == 2:
+    item = lang[15]
+    item2 = lang[17]
+    if coinsUpg == 0:
+      value = 25
+    elif coinsUpg == 1:
+      value = 50
+    elif coinsUpg == 2:
+      value = 75
+    elif coinsUpg == 3:
+      value = 100
+    elif coinsUpg == 4:
+      value = 150
+    elif coinsUpg == 5:
+      value = 9999
+  elif select == 3:
+      item = lang[31]
+      item2 = lang[14]
+      if fastl == 0:
+        value = 250
+      elif fastl == 1:
+        value = 300
+      elif fastl == 2:
+        value = 9999
+  else:
+    item = 'ERR01'
+  display.text(str(item), 64-len(item)*4+offsetX, 56, 65535)
+  display.text(str(item2), 64-len(item2)*4+offsetX, 64, 65535)
+  if value == 9999:
+    temp = "MAX"
+  else:
+    temp = value
+  display.text(str(temp), 64-len(str(temp))*4+offsetX, 96, 65535)
+  display.commit()
+
+def helps():
+  global menu, money, multi, coinsUpg
+  menu = 3
+  display.fill(0)
+  display.blit(sprite_coin, 0+offsetX, 0, 0)
+  display.text(str(round(money)), 13+offsetX, 0, 65535)
+  display.text(str("x"), 13 + len(str(round(money)))*8+offsetX, 0, 65535)
+  display.text(str(multi), 21 + len(str(round(money)))*8+offsetX, 0, 65535)
+  display.text(str(coinsUpg+1), 0+offsetX, 12, 65535)
+  display.text(str(lives)+",0", 11+offsetX, 31, 65535)
+  display.blit(sprite_life, 0+offsetX, 31, 0)
+  item = 'ERROR'
+  item2 = 'ERROR'
+  item3 = 'ERROR'
+  if select == 0:
+    display.text(lang[18], 40+offsetX, 0, 65535)
+    display.text(lang[19], 40+offsetX, 8, 65535)
+    display.text(lang[20], 40+offsetX, 16, 65535)
+    item = lang[21]+"1/3"
+    item2 = lang[22]
+    item3 = lang[23]
+  elif select == 1:
+    display.text(lang[24], 10+offsetX, 12, 65535)
+    display.text(lang[25], 26+offsetX, 18, 65535)
+    item = lang[21]+"2/3"
+  elif select == 2:
+    display.text(lang[27], 0+offsetX, 40, 65535)
+    display.text(lang[28], 0+offsetX, 48, 65535)
+    display.text(lang[29], 0+offsetX, 56, 65535)
+    item = lang[21]+"3/3"
+    item2 = lang[30]
+  display.text(str(item), 64 - len(item) * 4+offsetX, 104, 65535)
+  display.text(str(item2), 64 - len(item2) * 4+offsetX, 112, 65535)
+  display.text(str(item3), 64 - len(item3) * 4+offsetX, 120, 65535)
+  display.commit()
+
+def gamePrep():
+  global select, menu, shipX, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, lives, meteors, selectMeteor, mAH, mBH, mCH
+  select = 0
+  menu = 0
+  shipX = -4
+  meteorAY = -40
+  mAH = 3
+  meteorBY = -40
+  mBH = 3
+  meteorCY = -40
+  mCH = 3
+  meteorsShotInSession = 0
+  fVA = 2
+  fVB = 3
+  fVC = 3
+  lives = 1
+  if meteors == 0:
+      selectMeteor = [0, 1, 0]
+  elif meteors == 1:
+      selectMeteor = [1, 0, 1]
+  elif meteors == 2:
+      selectMeteor = [1, 1, 1]
+  shuffleMeteors()
+  game()
+
+def selectModulo():
+  if menu == 1:
+    return 5
+  elif menu == 5:
+    return 5
+  elif menu == 6 or menu == 12:
+    return 3
+
+def drawlaser(untilWhere):
+  global shipX, fastl
+  i = 79
+  while not i <= untilWhere+20:
+    drawgame()
+    display.blit(sprite_laser, shipX+15+offsetX, i, sprite_laser_transparent)
+    display.commit()
+    i -= fastl+3
+
+def shootlaser():
+  global fastl, meteorAY, meteorBY, meteorCY, money, coinsUpg, multi, meteorsShotInSession, shipPos, tone, mAH, mBH, mCH
+  if tone: piezo.tone(1000,50)
+  if shipPos == 1:
+    drawlaser(meteorAY)
+    if meteorKill > meteorAY >= -20:
+      mAH -= laser+1
+      if mAH <= 0:
+        mAH = 3
+        meteorAY = -40
+        money += (coinsUpg + 1)*multi
+        meteorsShotInSession += 1
+        shuffleMeteors()
+  elif shipPos == 2:
+    drawlaser(meteorBY)
+    if meteorKill > meteorBY >= -20:
+      mBH -= laser+1
+      if mBH <= 0:
+        mBH = 3
+        meteorBY = -40
+        money += (coinsUpg + 1)*multi
+        meteorsShotInSession += 1
+        shuffleMeteors()
+  elif shipPos == 3:
+    drawlaser(meteorCY)
+    if meteorKill > meteorCY >= -20:
+      mCH -= laser+1
+      if mCH <= 0:
+        mCH = 3
+        meteorCY = -40
+        money += (coinsUpg + 1)*multi
+        meteorsShotInSession += 1
+        shuffleMeteors()
+
+def langSelect():
+  global select, x, menu, laser, meteors, coinsUpg, value
+  display.fill(16)
+  display.text(lang[33], 64-len(lang[33])*4+offsetX, 0, 65535)
+  display.text("English", 128-len("English")*8+offsetX, (0-select+4)*15, 65535)
+  display.text("Hrvatski", 128-len("Hrvatski")*8+offsetX, (0-select+5)*15, 65535)
+  display.text("Deutsch "+lang[34], 128-len("Deutsch "+lang[34])*8+offsetX, (0-select+6)*15, 65535)
+  display.blit(sprite_en, 8+offsetX, (0-select+4)*15, 0)
+  display.blit(sprite_hr, 8+offsetX, (0-select+5)*15, 0)
+  display.blit(sprite_de, 8+offsetX, (0-select+6)*15, 65535)
+
+def downButton():
+  global select, x, menu, laser, meteors, coinsUpg, value, shipX, shipXchngBy
+  if selectModulo():
+    select = (select+1)%selectModulo()
+    scroll()
+  elif menu == 0:
+    shipX = shipX + shipXchngBy
+    if shipX > 100:
+      shipX = 100
+    if tone: piezo.tone(200, 50)
+    game()
+  elif menu == 2:
+    buymenu2(16, 0, 2)
+    buyscrollr(0, -72, 3)
+    buymenu2(0, 16, -2)
+    select = (select+1)%4
+    buymenu()
+    shopitem()
+  elif menu == 10:
+    select += 1
+    if tone: piezo.tone(200, 50)
+    select = select % 8
+buttons.on_press(down_button, downButton)
+
+def upButton():
+  global select, x, menu, laser, meteors, coinsUpg, value, shipX, shipXchngBy, tone
+  if selectModulo():
+    select = (select-1)%selectModulo()
+    scroll()
+  elif menu == 0:
+    shipX = shipX - shipXchngBy
+    if shipX < -4:
+      shipX = -4
+    if tone: piezo.tone(200, 50)
+    game()
+  elif menu == 2:
+    buymenu2(16, 0, 2)
+    buyscrollr(0, 72, -3)
+    buymenu2(0, 16, -2)
+    select = (select-1)%4
+    buymenu()
+    shopitem()
+buttons.on_press(up_button, upButton)
+
+def aButton():
+  global fastl, tone, code, select, x, menu, money, laser, meteors, coinsUpg, value, shipX, shipPos, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, multi, lang
+  if menu == 0:
+    shootlaser()
+  elif menu == 1:
+    if select == 0:
+      select = 0
+      helps()
+    elif select == 1:
+      select = 0
+      menu = 2
+      buymenu()
+    elif select == 2:
+      menu = 5
+      select = 0
+      mainmenu2()
+      display.text(">",0+offsetX,60,65535)
+      display.commit()
+    elif select == 3:
+      menu = 4
+      about()
+    elif select == 4:
+      pass
+    elif select == 5:
+      global running
+      running = False
+      save()
+      display.fill(65535)
+      display.blit(sprite_qr, 0, 0, 0)
+      display.commit()
+  elif menu == 2:
+    if value != 9999 and money >= value:
+      if tone: piezo.tone(200, 50)
+      money -= value
+      if select == 0:
+        laser += 1
+      elif select == 1:
+        meteors += 1
+      elif select == 2:
+        coinsUpg += 1
+      elif select == 3:
+        fastl += 1
+      save()
+      buymenu()
+      shopitem()
+    else:
+      temp = value != 9999
+      if temp:
+        display.text(str(money), 13+offsetX, 0, 63488)
+        display.commit()
+      if tone: piezo.tone(125, 50)
+      time.sleep(0.25)
+      if temp:
+        display.text(str(money), 13+offsetX, 0, 65535)
+        display.commit()
+  elif menu == 3:
+    if select == 2:
+      menu = 0
+      gamePrep()
+    else:
+      select += 1
+      helps()
+  elif menu == 5:
+    if select == 0:
+      tone = not tone
+      mainmenu2()
+      display.text(">",0+offsetX,60,65535)
+      display.commit()
+    elif select == 1:
+      menu = 6
+      if lang == lang_en:
+        select = 0
+      elif lang == lang_hr:
+        select = 1
+      elif lang == lang_de:
+        select = 2
+      langSelect()
+      display.text(">",0+offsetX,60,65535)
+      display.commit()
+    elif select == 2:
+      save()
+      print('Save OK')
+      display.text(lang[39],64-len(lang[39])*4+offsetX,60,16)
+      display.text('OK',56+offsetX,60,65535)
+      display.commit()
+    elif select == 3:
+      global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl
+      money = 0
+      laser = 0
+      meteors = 0
+      coinsUpg = 0
+      tone = True
+      totalDistance = 0
+      fastl = 0
+      import os
+      try: os.remove('data.txt')
+      except OSError: pass
+      print('Reset OK')
+      display.text(lang[40],64-len(lang[40])*4+offsetX,60,16)
+      display.text('OK',56+offsetX,60,65535)
+      display.commit()
+    elif select == 4:
+      save()
+      import machine
+      machine.soft_reset()
+  elif menu == 6:
+    if select == 0:
+      lang = lang_en[:]
+    elif select == 1:
+      lang = lang_hr[:]
+    elif select == 2:
+      lang = lang_de[:]
+    menu = 5
+    select = 1
+    mainmenu2()
+    display.text(">",0+offsetX,60,65535)
+    display.commit()
+  elif menu == 10:
+      minigame(True)
+  elif menu == 12:
+    if select == 0:
+      lang = lang_en[:]
+    elif select == 1:
+      lang = lang_hr[:]
+    elif select == 2:
+      lang = lang_de[:]
+    menu = 1
+    select = 0
+    display.fill(0)
+    startup()
+buttons.on_press(a_button, aButton)
+
+def bButton():
+  global select, menu, laser, meteors, coinsUpg, value
+  if menu == 0 or menu == 10:
+    save()
+    if tone: piezo.tone(1000, 150)
+    if tone: piezo.tone(500, 150)
+    select = 0
+    menu = 1
+    mainmenu()
+    scroll()
+  elif menu == 2:
+    menu = 1
+    select = 1
+    mainmenu()
+    display.text(">",0+offsetX,60,65535)
+    display.commit()
+  elif menu == 4:
+    menu = 1
+    select = 3
+    mainmenu()
+    display.text(">",0+offsetX,60,65535)
+    display.commit()
+  elif menu == 5:
+    menu = 1
+    select = 2
+    mainmenu()
+    display.text(">",0+offsetX,60,65535)
+    display.commit()
+  elif 6 <= menu < 8:
+    menu = 5
+    select = 0
+    mainmenu2()
+    display.text(">",0+offsetX,60,65535)
+    display.commit()
+  elif menu == 3:
+    menu = 0
+    gamePrep()
+buttons.on_press(b_button, bButton)
+
+allowed_versions = ['RELEASE', 'BETA', 'ALPHA']
+
+if version_type in allowed_versions:
+  print('Meteor Shooter',version)
+  print('Za STEMIovu Školu budućnosti')
+  print('GitHub: https://github.com/MrUsername7/MeteorShooter')
+  startup()
+  if menu == 1:
+      mainmenu()
+      display.text(str(">"),0+offsetX,60,65535)
+      display.commit()
+  while running:
+    buttons.scan()
+    if menu == 0:
+      temp = random.randint(0,2)
+      if temp == 0 and selectMeteor[0]:
+        meteorAY += random.randint(fVA,fVB)/fVC
+      elif temp == 1 and selectMeteor[1]:
+        meteorBY += random.randint(fVA,fVB)/fVC
+      elif temp == 2 and selectMeteor[2]:
+        meteorCY += random.randint(fVA,fVB)/fVC
+      if meteorAY >= 130:
+        mAH = 3
+        meteorAY = -40
+        shuffleMeteors()
+      elif meteorBY >= 130:
+        mBH = 3
+        meteorBY = -40
+        shuffleMeteors()
+      elif meteorCY >= 130:
+        mCH = 3
+        meteorCY = -40
+        shuffleMeteors()
+      game()
+    elif menu == 10:
+        minigame()
+    if flicker:
+      if menu == 0 or menu == 3:
+        display.fill(0)
+        display.commit()
+        if menu == 3:
+          help()
+else:
+  print('fallback, while True loop escaped')
+  strings = [
+   ################****     < ovo su 16 hashtaga i 4 zvjezdice koji označuju koliko stane na ekran
+  'why did you put ',        # koristi hashtagove za Bit/Codee, a sve za Chatter
+  'this on your Bit',
+  'or whichever    ',
+  'device?         ',
+  'this is a       ',
+ f'{version_type}  ',
+  'version so...   ',
+  '                ',
+  'GET OUT         '
+  ]
+  for i in range(0,len(strings)):
+      if not strings[i] == version_type:
+          display.text(strings[i], 0, i*8, 65535)
+      else:
+          display.text(strings[i], 0, i*8, 0x0ff0)
+  display.text(version, 0, 112, 0xf00f)
+  display.text(version_type, 0, 120, 0xf00f)
+  display.commit()
