@@ -1,6 +1,0 @@
-1 meteor je 1 coin*     *bez upgradea
-1 meteor: 3 health
-
-stronger/ultra laser: 100, 250
-two/three meteors: 50, 75
-more coins: 25, 50, 75, 100, 150 - 2, 5, 7, 10, 15
