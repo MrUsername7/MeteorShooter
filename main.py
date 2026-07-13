@@ -15,7 +15,7 @@ menus:
 12: langSelectOnStartup
 """
 
-version = "1.4.2 'THETA'"
+version = "1.4.3 'IOTA'"
 # DEVEX znači DEVeloper EXchange
 version_type = 'RELEASE'
 version_type = version_type.upper()
@@ -196,152 +196,13 @@ class LVK:
 if wlan.isconnected():
   print('Connection OK')
 
-def connected():
-  if wlan.isconnected():
-    return ' (OK)'
-  else: return ''
+import lang_strings as ls
 
-lang_en = [
-"for Bit",
-"Textures:",
-"Programming:",
-"EMULATED",
-"(B) Back",
-"Play",
-"Shop",
-"Settings",
-"About",
-"Sound: ",
-"Confirm",
-"Change",
-"selection",
-'Stronger',
-'Laser',
-'More',
-'Meteors',
-'Coins',
-"< Money and",
-"progress",
-"multiplier",
-"Help page ",
-"(A) Continue...",
-"(B) Skip",
-'< "More Coins"',
-"upgrade",
-"Network"+connected(),
-"A: Shoot",
-"Menu: Exit",
-"< and >: Move",
-"(A) Let's play!",
-"Faster",
-"Translations:",
-"Language",
-"(!!!)",
-"SSID",
-"Password",
-"Connect",
-"Online",
-'Save',
-'Erase data',
-'Reset',
-'Refresh'
-]
-
-lang_hr = [
-"za Bit",
-"Teksture:",
-"Programiranje:",
-"EMULIRANO",
-"(B) Nazad",
-"Igraj",
-"Trgovina",
-"Postavke",
-"O",
-"Zvuk: ",
-"Potvrdi",
-"Promjeni",
-"odabir",
-'Jaci',
-'Laser',
-'Vise',
-'Meteora',
-'Novaca',
-"< Novci i",
-"multiplikator",
-"napretka",
-"Pomocna str. ",
-"(A) Nastavak...",
-"(B) Preskoci",
-'< "Vise Novaca"',
-"nadogradnja",
-"Mreza"+connected(),
-"A: Pucaj",
-"Menu: Izlaz",
-"< i >: Pomici",
-"(A) Ajmo igrati!",
-"Brzi",
-"Prijevodi:",
-"Jezik",
-"(!!!)",
-"SSID",
-"Zaporka",
-"Spoji se",
-"Online",
-'Spremi',
-'Obrisi podatke',
-'Ponovno pokreni',
-'Osvjezi'
-]
-
-lang_de = [
-'fuer Bit',
-'Texturen:',
-'Programmierung:',
-'EMULIERT',
-'(B) Zurueck',
-'Spielen',
-'Shop',
-'Einstellungen',
-'Ueber',
-'Klang: ',
-'Bestaetigen',
-'Aendern',
-'Auswahl',
-'Staerker',
-'Laser',
-'Mehr',
-'Meteore',
-'Muenzen',
-'< Geld und',
-'Fortschritt',
-'Multiplikator',
-'Hilfeseite',
-'(A) Weiter...',
-'(B) ueberspringen',
-'< "Mehr Muenzen"',
-'Upgrade',
-'Netzwerk'+connected(),
-'A: Schiessen',
-'Menue: Beenden',
-'< und >: Bewegen',
-"(A) Los geht's!",
-'Schneller',
-'Uebersetzungen:',
-'Sprache',
-'(!!!)',
-'SSID',
-'Passwort',
-'Verbinden',
-'Online',
-'Speichern',
-'Daten loeschen',
-'Zuruecksetzen',
-'Aktualisieren'
-]
-
-lang_es = []
-
-lang_fr = []
+lang_en = ls.en
+lang_hr = ls.hr
+lang_de = ls.de
+lang_es = ls.es
+lang_fr = ls.fr
 
 select = 0
 x = None
@@ -640,11 +501,12 @@ def game():
       if tone: piezo.tone(1000, 150)
     fVC = 5/4
   elif meteorsShotInSession == 25:
-    if fVA != 2:
+    if fVA != 3:
       if tone: piezo.tone(500, 150)
       if tone: piezo.tone(1000, 150)
-    fVA = 2
+    fVA = 3
     fVB = 3
+    fVC = 1
   elif meteorsShotInSession == 40:
     if fVC != 3/4:
       if tone: piezo.tone(500, 150)
@@ -846,13 +708,14 @@ def helps():
   display.text(str(coinsUpg+1), 0+offsetX, 12, 65535)
   display.text(str(lives)+",0", 11+offsetX, 31, 65535)
   display.blit(sprite_life, 0+offsetX, 31, 0)
+  item = 'ERROR'
+  item2 = lang[22]
+  item3 = lang[23]
   if select == 0:
     display.text(lang[18], 40+offsetX, 0, 65535)
     display.text(lang[19], 40+offsetX, 8, 65535)
     display.text(lang[20], 40+offsetX, 16, 65535)
     item = lang[21]+"1/3"
-    item2 = lang[22]
-    item3 = lang[23]
   elif select == 1:
     display.text(lang[24], 10+offsetX, 12, 65535)
     display.text(lang[25], 26+offsetX, 18, 65535)
@@ -882,7 +745,7 @@ def gamePrep():
   meteorsShotInSession = 0
   fVA = 2
   fVB = 3
-  fVC = 3
+  fVC = 7/4
   lives = 1
   if meteors == 0:
       selectMeteor = [0, 1, 0]
