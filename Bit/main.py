@@ -15,9 +15,9 @@ menus:
 12: langSelectOnStartup
 """
 
-version = "1.5.0 BETA 5" #kappa
+version = "1.5.0 'KAPPA'"
 # DEVEX znači DEVeloper EXchange
-version_type = 'BETA'
+version_type = 'RELEASE'
 version_type = version_type.upper()
 
 import network, gc
