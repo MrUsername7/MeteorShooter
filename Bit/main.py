@@ -15,9 +15,9 @@ menus:
 12: langSelectOnStartup
 """
 
-version = "1.4.3 'IOTA'"
+version = "1.5.0 BETA 1" #kappa
 # DEVEX znači DEVeloper EXchange
-version_type = 'RELEASE'
+version_type = 'BETA'
 version_type = version_type.upper()
 
 import network, gc
@@ -33,18 +33,18 @@ import math, random, array, time
 begin()
 from sprite_data import *
 skin = 0
-sprite_coin = FrameBuffer(coinSprite, 11, 11, RGB565)
+sprite_coin = FrameBuffer(coinSprite[3], coinSprite[0], coinSprite[1], RGB565)
 meteor_type = [0,0,0]
 sprite_asteroid = [FrameBuffer(asteroidTypeSprite[meteor_type[0]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[1]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[2]][0], 27, 25, RGB565)]
 sprite_asteroid_transparent = [asteroidTypeSprite[meteor_type[0]][1], asteroidTypeSprite[meteor_type[1]][1], asteroidTypeSprite[meteor_type[2]][1]]
-sprite_cup = FrameBuffer(cupSprite, 40, 40, RGB565)
+sprite_cup = FrameBuffer(cupSprite[3], cupSprite[0], cupSprite[1], RGB565)
 sprite_ship = FrameBuffer(shipSkinSprite[skin][0], 32, 48, RGB565)
 sprite_ship_transparent = shipSkinSprite[skin][1]
 sprite_laser = FrameBuffer(laserSkinSprite[skin][0], 3, 6, RGB565)
 sprite_laser_transparent = laserSkinSprite[skin][1]
-sprite_life2times = FrameBuffer(life2timesSprite, 31, 10, RGB565)
-sprite_life = FrameBuffer(lifeSprite, 11, 10, RGB565)
-sprite_alien = FrameBuffer(alienSprite, 22, 29, RGB565)
+sprite_life2times = FrameBuffer(life2timesSprite[3], life2timesSprite[0], life2timesSprite[1], RGB565)
+sprite_life = FrameBuffer(lifeSprite[3], lifeSprite[0], lifeSprite[1], RGB565)
+sprite_alien = FrameBuffer(alienSprite[3], alienSprite[0], alienSprite[1], RGB565)
 sprite_qr = FrameBuffer(qrSprite, 128, 128, MONO_HLSB)
 
 sprite_hr = FrameBuffer(hrSprite, 15, 8, RGB565)
