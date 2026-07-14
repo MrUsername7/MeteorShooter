@@ -72,7 +72,13 @@ lasers['image'] = pygame.transform.scale(lasers['image'],
 lasers['width'] = lasers['image'].get_width()
 lasers['height'] = lasers['image'].get_height()
 
-score = 0
+import gzip
+try:
+    with open('score', 'rb') as f:
+        score = int(gzip.decompress(f.read()).decode())
+except Exception as e:
+    print('Exception: '+str(e))
+    score = 0
 
 FPS = 60
 game_over = False
@@ -154,4 +160,6 @@ while running:
     pygame.display.flip()
     pygame.time.Clock().tick(FPS)
 
+with open('score', 'wb') as f:
+    f.write(gzip.compress(str(score).encode()))
 pygame.quit()
