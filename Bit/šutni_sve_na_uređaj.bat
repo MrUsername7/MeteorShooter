@@ -10,6 +10,9 @@ mpremote resume cp boot.py :boot.py
 mpremote resume cp alien.rgb565 :alien.rgb565
 mpremote resume cp coin.rgb565 :coin.rgb565
 mpremote resume cp cup.rgb565 :cup.rgb565
+mpremote resume cp de.rgb565 :de.rgb565
+mpremote resume cp en.rgb565 :en.rgb565
+mpremote resume cp hr.rgb565 :hr.rgb565
 mpremote resume cp life.rgb565 :life.rgb565
 mpremote resume cp life2times.rgb565 :life2times.rgb565
 mpremote resume cp qr.mhlsb :qr.mhlsb
