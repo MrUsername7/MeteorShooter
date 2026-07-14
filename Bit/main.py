@@ -15,7 +15,7 @@ menus:
 12: langSelectOnStartup
 """
 
-version = "1.4.3 'IOTA'"
+version = "1.5.0 'KAPPA'"
 # DEVEX znači DEVeloper EXchange
 version_type = 'RELEASE'
 version_type = version_type.upper()
@@ -33,23 +33,23 @@ import math, random, array, time
 begin()
 from sprite_data import *
 skin = 0
-sprite_coin = FrameBuffer(coinSprite, 11, 11, RGB565)
+sprite_coin = FrameBuffer(coinSprite[3], coinSprite[0], coinSprite[1], RGB565)
 meteor_type = [0,0,0]
 sprite_asteroid = [FrameBuffer(asteroidTypeSprite[meteor_type[0]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[1]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[2]][0], 27, 25, RGB565)]
 sprite_asteroid_transparent = [asteroidTypeSprite[meteor_type[0]][1], asteroidTypeSprite[meteor_type[1]][1], asteroidTypeSprite[meteor_type[2]][1]]
-sprite_cup = FrameBuffer(cupSprite, 40, 40, RGB565)
-sprite_ship = FrameBuffer(shipSkinSprite[skin][0], 32, 48, RGB565)
-sprite_ship_transparent = shipSkinSprite[skin][1]
-sprite_laser = FrameBuffer(laserSkinSprite[skin][0], 3, 6, RGB565)
-sprite_laser_transparent = laserSkinSprite[skin][1]
-sprite_life2times = FrameBuffer(life2timesSprite, 31, 10, RGB565)
-sprite_life = FrameBuffer(lifeSprite, 11, 10, RGB565)
-sprite_alien = FrameBuffer(alienSprite, 22, 29, RGB565)
-sprite_qr = FrameBuffer(qrSprite, 128, 128, MONO_HLSB)
+sprite_cup = FrameBuffer(cupSprite[3], cupSprite[0], cupSprite[1], RGB565)
+sprite_ship = FrameBuffer(shipSkinSprite[skin][3], shipSkinSprite[skin][0], shipSkinSprite[skin][1], RGB565)
+sprite_ship_transparent = shipSkinSprite[skin][2]
+sprite_laser = FrameBuffer(laserSkinSprite[skin][3], laserSkinSprite[skin][0], laserSkinSprite[skin][1], RGB565)
+sprite_laser_transparent = laserSkinSprite[skin][2]
+sprite_life2times = FrameBuffer(life2timesSprite[3], life2timesSprite[0], life2timesSprite[1], RGB565)
+sprite_life = FrameBuffer(lifeSprite[3], lifeSprite[0], lifeSprite[1], RGB565)
+sprite_alien = FrameBuffer(alienSprite[3], alienSprite[0], alienSprite[1], RGB565)
+sprite_qr = FrameBuffer(qrSprite[2], qrSprite[0], qrSprite[1], MONO_HLSB)
 
-sprite_hr = FrameBuffer(hrSprite, 15, 8, RGB565)
-sprite_en = FrameBuffer(enSprite, 15, 8, RGB565)
-sprite_de = FrameBuffer(deSprite, 15, 8, RGB565)
+sprite_hr = FrameBuffer(hrSprite[3], hrSprite[0], hrSprite[1], RGB565)
+sprite_en = FrameBuffer(enSprite[3], enSprite[0], enSprite[1], RGB565)
+sprite_de = FrameBuffer(deSprite[3], deSprite[0], deSprite[1], RGB565)
 
 offsetX = 0
 
@@ -343,10 +343,10 @@ def startup():
 def setskin():
     global skin, sprite_ship, sprite_ship_transparent, sprite_laser, sprite_laser_transparent
     skin = (skin+1)%3
-    sprite_ship = FrameBuffer(shipSkinSprite[skin][0], 32, 48, RGB565)
-    sprite_ship_transparent = shipSkinSprite[skin][1]
-    sprite_laser = FrameBuffer(laserSkinSprite[skin][0], 3, 6, RGB565)
-    sprite_laser_transparent = laserSkinSprite[skin][1]
+    sprite_ship = FrameBuffer(shipSkinSprite[skin][3], shipSkinSprite[skin][0], shipSkinSprite[skin][1], RGB565)
+    sprite_ship_transparent = shipSkinSprite[skin][2]
+    sprite_laser = FrameBuffer(laserSkinSprite[skin][3], laserSkinSprite[skin][0], laserSkinSprite[skin][1], RGB565)
+    sprite_laser_transparent = laserSkinSprite[skin][2]
 
 def shuffle(array):
     global lives, select, livesTick
