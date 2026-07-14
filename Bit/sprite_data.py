@@ -6,9 +6,9 @@ life2timesSprite=msrgb565.read('life2times')
 lifeSprite=msrgb565.read('life')
 alienSprite=msrgb565.read('alien')
 qrSprite=msmono.read('qr')
-hrSprite=msrgb565.read('hr')
-enSprite=msrgb565.read('en')
-deSprite=msrgb565.read('de')
+hrSprite=msrgb565.read('flags/hr')
+enSprite=msrgb565.read('flags/en')
+deSprite=msrgb565.read('flags/de')
 
 #široko 32 visoko 48
 shipSkinSprite=[
@@ -27,11 +27,11 @@ shipSkinSprite=[
 #široko 3 visoko 6
 laserSkinSprite=[
     #default
-    [bytearray(b'\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00\xF8\x00'),0],
+    msrgb565.read('skins/lasers/default'),
     #francuska-francuski kruh
-    [bytearray(b'\x00\x00\xEE\x95\x00\x00\xBC\x2A\xEE\x95\xEE\x95\xEE\x95\xBC\x2A\xEE\x95\xEE\x95\xBC\x2A\xEE\x95\xEE\x95\xEE\x95\xBC\x2A\x00\x00\xEE\x95\x00\x00'),0],
+    msrgb565.read('skins/lasers/french'),
     #hrvatska-ćevap
-    [bytearray(b'\x00\x00\x7A\xA8\x00\x00\x7A\xA8\x7A\xA8\x59\xE6\x72\x67\x59\xE6\x59\xE6\x7A\xA8\x72\x67\x59\xE6\x7A\xA8\x7A\xA8\x7A\xA8\x00\x00\x7A\xA8\x00\x00'),0],
+    msrgb565.read('skins/lasers/croatia'),
     #bus-glowy
     [],
     #b2 spirit-bombe   hq bomba render će iti teško
