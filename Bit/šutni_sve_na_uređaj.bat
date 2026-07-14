@@ -17,4 +17,8 @@ mpremote resume cp life.rgb565 :life.rgb565
 mpremote resume cp life2times.rgb565 :life2times.rgb565
 mpremote resume cp qr.mhlsb :qr.mhlsb
 
+mpremote resume cp skins/ships/default.rgb565 :skins/ships/default.rgb565
+mpremote resume cp skins/ships/french.rgb565 :skins/ships/french.rgb565
+mpremote resume cp skins/ships/croatia.rgb565 :skins/ships/croatia.rgb565
+
 echo Kopirano! Samo napravi reset.

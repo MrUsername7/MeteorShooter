@@ -15,7 +15,7 @@ menus:
 12: langSelectOnStartup
 """
 
-version = "1.5.0 BETA 3" #kappa
+version = "1.5.0 BETA 4" #kappa
 # DEVEX znači DEVeloper EXchange
 version_type = 'BETA'
 version_type = version_type.upper()
@@ -38,8 +38,8 @@ meteor_type = [0,0,0]
 sprite_asteroid = [FrameBuffer(asteroidTypeSprite[meteor_type[0]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[1]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[2]][0], 27, 25, RGB565)]
 sprite_asteroid_transparent = [asteroidTypeSprite[meteor_type[0]][1], asteroidTypeSprite[meteor_type[1]][1], asteroidTypeSprite[meteor_type[2]][1]]
 sprite_cup = FrameBuffer(cupSprite[3], cupSprite[0], cupSprite[1], RGB565)
-sprite_ship = FrameBuffer(shipSkinSprite[skin][0], 32, 48, RGB565)
-sprite_ship_transparent = shipSkinSprite[skin][1]
+sprite_ship = FrameBuffer(shipSkinSprite[skin][3], shipSkinSprite[skin][0], shipSkinSprite[skin][1], RGB565)
+sprite_ship_transparent = shipSkinSprite[skin][2]
 sprite_laser = FrameBuffer(laserSkinSprite[skin][0], 3, 6, RGB565)
 sprite_laser_transparent = laserSkinSprite[skin][1]
 sprite_life2times = FrameBuffer(life2timesSprite[3], life2timesSprite[0], life2timesSprite[1], RGB565)
@@ -343,8 +343,8 @@ def startup():
 def setskin():
     global skin, sprite_ship, sprite_ship_transparent, sprite_laser, sprite_laser_transparent
     skin = (skin+1)%3
-    sprite_ship = FrameBuffer(shipSkinSprite[skin][0], 32, 48, RGB565)
-    sprite_ship_transparent = shipSkinSprite[skin][1]
+    sprite_ship = FrameBuffer(shipSkinSprite[skin][3], shipSkinSprite[skin][0], shipSkinSprite[skin][1], RGB565)
+    sprite_ship_transparent = shipSkinSprite[skin][2]
     sprite_laser = FrameBuffer(laserSkinSprite[skin][0], 3, 6, RGB565)
     sprite_laser_transparent = laserSkinSprite[skin][1]
 
