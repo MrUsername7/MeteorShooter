@@ -6,13 +6,22 @@ try:
 except KeyError:
     os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
-import random
 import pygame
 
 try:
     os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = default_pygame_support_prompt
 except NameError:
     os.environ.pop('PYGAME_HIDE_SUPPORT_PROMPT')
+
+import random
+import sys
+
+def find_real_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath('.')
+    return os.path.join(base_path, relative_path)
 
 SCREEN_WIDTH: int = 512
 SCREEN_HEIGHT: int = 512
@@ -27,7 +36,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 font = pygame.font.SysFont('Arial', 36)
 
 ship = {
-    'image': pygame.image.load('assets/ship.png'),
+    'image': pygame.image.load(find_real_path('assets/ship.png')),
     'height': None,
     'width': None,
     'x': None,
@@ -41,19 +50,20 @@ ship['x'] = SCREEN_WIDTH // 2 - ship['width'] // 2
 ship['y'] = SCREEN_HEIGHT - ship['height']
 
 asteroid = {
-    'image': pygame.image.load('assets/asteroid.png'),
+    'image': pygame.image.load(find_real_path('assets/asteroid.png')),
     'width': None,
     'height': None,
     'x': None,
-    'y': 0
+    'y': None
 }
 asteroid['width'] = asteroid['image'].get_width() * width_scaling
 asteroid['height'] = asteroid['image'].get_height() * height_scaling
 asteroid['x'] = random.randint(0, int(SCREEN_WIDTH - asteroid['width']))
+asteroid['y'] = -asteroid['height']
 asteroid['image'] = pygame.transform.scale(asteroid['image'], (asteroid['width'], asteroid['height']))
 
 lasers = {
-    'image': pygame.image.load('assets/laser.bmp'),
+    'image': pygame.image.load(find_real_path('assets/laser.bmp')),
     'entities': []
 }
 lasers['image'] = pygame.transform.scale(lasers['image'],
@@ -84,7 +94,7 @@ while running:
                 score += 1
                 lasers['entities'][i]['destroyed'] = True
                 asteroid['x'] = random.randint(0, int(SCREEN_WIDTH - asteroid['width']))
-                asteroid['y'] = 0
+                asteroid['y'] = -asteroid['height']
 
         # move lasers
         for i in range(len(lasers['entities'])):
