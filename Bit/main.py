@@ -15,7 +15,7 @@ menus:
 12: langSelectOnStartup
 """
 
-version = "1.5.0 BETA 1" #kappa
+version = "1.5.0 BETA 2" #kappa
 # DEVEX znači DEVeloper EXchange
 version_type = 'BETA'
 version_type = version_type.upper()
@@ -45,7 +45,7 @@ sprite_laser_transparent = laserSkinSprite[skin][1]
 sprite_life2times = FrameBuffer(life2timesSprite[3], life2timesSprite[0], life2timesSprite[1], RGB565)
 sprite_life = FrameBuffer(lifeSprite[3], lifeSprite[0], lifeSprite[1], RGB565)
 sprite_alien = FrameBuffer(alienSprite[3], alienSprite[0], alienSprite[1], RGB565)
-sprite_qr = FrameBuffer(qrSprite, 128, 128, MONO_HLSB)
+sprite_qr = FrameBuffer(qrSprite[2], qrSprite[0], qrSprite[1], MONO_HLSB)
 
 sprite_hr = FrameBuffer(hrSprite, 15, 8, RGB565)
 sprite_en = FrameBuffer(enSprite, 15, 8, RGB565)
