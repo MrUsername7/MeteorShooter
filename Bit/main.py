@@ -13,11 +13,12 @@ menus:
 10: minigame
 11: listNetworks
 12: langSelectOnStartup
+13: skins
 """
 
-version = "1.5.0 'KAPPA'"
+version = "1.6.0 BETA 1" #'LAMBDA'
 # DEVEX znači DEVeloper EXchange
-version_type = 'RELEASE'
+version_type = 'BETA'
 version_type = version_type.upper()
 
 import network, gc
@@ -242,10 +243,11 @@ ssid = None
 pswd = None
 running = True
 networks = None
+unlockedSkins = [2, 0, 0, 0, 0]
 
 def save():
   with open('data.txt', 'w') as f:
-    global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl, ssid, pswd
+    global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl, skin, unlockedSkins
     f.write(str(money)+'\n')
     f.write(str(laser)+'\n')
     f.write(str(meteors)+'\n')
@@ -263,11 +265,13 @@ def save():
     elif lang == lang_fr:
       f.write('fr\n')
     f.write(str(fastl)+'\n')
+    f.write(str(skin)+'\n')
+    f.write(str(unlockedSkins)+'\n')
 
 def load():
   try:
     with open('data.txt', 'r') as f:
-      global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl
+      global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl, skin, unlockedSkins
       money = float(f.readline().strip())
       laser = int(f.readline().strip())
       meteors = int(f.readline().strip())
@@ -286,6 +290,9 @@ def load():
       elif lang == "fr":
         lang = lang_fr[:]
       fastl = int(f.readline().strip())
+      skin = int(f.readline().strip())
+      clean_elements = f.readline().strip().strip("[]").split(",")
+      unlockedSkins = [int(i) for i in clean_elements]
   except:
     pass
   try:
@@ -342,7 +349,6 @@ def startup():
 
 def setskin():
     global skin, sprite_ship, sprite_ship_transparent, sprite_laser, sprite_laser_transparent
-    skin = (skin+1)%3
     sprite_ship = FrameBuffer(shipSkinSprite[skin][3], shipSkinSprite[skin][0], shipSkinSprite[skin][1], RGB565)
     sprite_ship_transparent = shipSkinSprite[skin][2]
     sprite_laser = FrameBuffer(laserSkinSprite[skin][3], laserSkinSprite[skin][0], laserSkinSprite[skin][1], RGB565)
@@ -396,7 +402,8 @@ def mainmenu():
   draw_new_menu_items(lang[7],2)
   draw_new_menu_items(lang[8],3)
   draw_new_menu_items(lang[38],4)
-  display.text('QR', 56+offsetX, (0-select+9)*15, 65535)
+  draw_new_menu_items('QR', 5)
+  draw_new_menu_items('skins', 6)
   display.rect(0+offsetX, 0, 128, 8, 16, 1)
   display.text("METEOR SHOOT>R", 8+offsetX, 0, 65535)
 
@@ -441,6 +448,52 @@ def listNetworks():
     draw_new_menu_items(lang[42], 0)
     for i in range(len(networks)):
         draw_new_menu_items(networks[i][0].decode(), i-5)
+
+def skinitem():
+  global select, x, menu, laser, meteors, coinsUpg, value, fastl
+  display.blit(sprite_coin, 0+offsetX, 0, 0)
+  display.text(str(money), 13+offsetX, 0, 65535)
+  if select == 0:
+    item = 'default'
+    if unlockedSkins[0]:
+      value = 9998+unlockedSkins[0]
+    else:
+      value = 100
+  elif select == 1:
+    item = 'french'
+    if unlockedSkins[1]:
+      value = 9998+unlockedSkins[1]
+    else:
+      value = 200
+  elif select == 2:
+    item = 'croatia'
+    if unlockedSkins[2]:
+      value = 9998+unlockedSkins[2]
+    else:
+      value = 300
+  elif select == 3:
+    item = 'bus'
+    if unlockedSkins[3]:
+      value = 9998+unlockedSkins[3]
+    else:
+      value = 400
+  elif select == 4:
+    item = 'b2 spirit'
+    if unlockedSkins[4]:
+      value = 9998+unlockedSkins[4]
+    else:
+      value = 500
+  else:
+    item = 'ERR01'
+  display.text(str(item), 64-len(item)*4+offsetX, 60, 65535)
+  if value == 9999:
+    temp = "EQUIP"
+  elif value == 10000:
+    temp = "EQUIPPED"
+  else:
+    temp = value
+  display.text(str(temp), 64-len(str(temp))*4+offsetX, 96, 65535)
+  display.commit()
 
 def appropriateMenu():
   if menu == 1:
@@ -609,7 +662,8 @@ def buymenu():
   display.rect(32+offsetX, 32, 64, 64, 0, 1)
   display.rect(0+offsetX, 40, 16, 48, 0, 1)
   display.rect(112+offsetX, 40, 16, 48, 0, 1)
-  shopitem()
+  if menu == 2: shopitem()
+  elif menu == 13: skinitem()
 
 def buyscrollr(startValue, targetValue, step):
   global select, x, menu, laser, meteors, coinsUpg, value
@@ -759,7 +813,7 @@ def gamePrep():
 def selectModulo():
   global networks
   if menu == 1:
-    return 6
+    return 7
   elif menu == 5:
     return 6
   elif menu == 6 or menu == 12:
@@ -857,7 +911,7 @@ def upButton():
 buttons.on_press(up_button, upButton)
 
 def aButton():
-  global ssid, pswd, fastl, tone, code, select, x, menu, money, laser, meteors, coinsUpg, value, shipX, shipPos, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, multi, lang
+  global ssid, pswd, fastl, tone, code, select, x, menu, money, laser, meteors, coinsUpg, value, shipX, shipPos, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, multi, lang, unlockedSkins, skin
   if menu == 0:
     shootlaser()
   elif menu == 1:
@@ -886,6 +940,10 @@ def aButton():
       display.fill(65535)
       display.blit(sprite_qr, 0, 0, 0)
       display.commit()
+    elif select == 6:
+      select = skin
+      menu = 13
+      buymenu()
   elif menu == 2:
     if value != 9999 and money >= value:
       if tone: piezo.tone(200, 50)
@@ -1027,6 +1085,32 @@ def aButton():
     select = 0
     display.fill(0)
     startup()
+  elif menu == 13:
+    temp = value < 9999
+    if temp and money >= value:
+      if tone: piezo.tone(200, 50)
+      money -= value
+      unlockedSkins[select] = 1
+      buymenu()
+      skinitem()
+    else:
+      if temp:
+        display.text(str(money), 13+offsetX, 0, 63488)
+        display.commit()
+      if value == 9999:
+        for i in range(len(unlockedSkins)):
+          if unlockedSkins[i] == 2:
+            unlockedSkins[i] = 1
+        unlockedSkins[select] = 2
+        skin = select
+        setskin()
+        buymenu()
+      if tone: piezo.tone(125, 50)
+      time.sleep(0.25)
+      if temp:
+        display.text(str(money), 13+offsetX, 0, 65535)
+        display.commit()
+    save()
 buttons.on_press(a_button, aButton)
 
 def menuButton():
@@ -1051,9 +1135,6 @@ def menuButton():
     display.commit()
     import webrepl
     webrepl.start(password='1234')
-  elif menu == 5:
-      setskin()
-      print(f'Skin set to {skin}.')
   elif menu == 8:
     LVK.shiftLock()
 buttons.on_press(menu_button, menuButton)
@@ -1099,6 +1180,12 @@ def bButton():
     networkMenu()
     display.text(">", 0+offsetX, 60, 65535)
     display.commit()
+  elif menu == 13:
+    menu = 1
+    select = 6
+    mainmenu()
+    display.text(">",0+offsetX,60,65535)
+    display.commit()
 buttons.on_press(b_button, bButton)
 
 def rightButton():
@@ -1118,6 +1205,13 @@ def rightButton():
     shopitem()
   elif menu == 8:
     LVK.rightPress()
+  elif menu == 13:
+    buymenu2(16, 0, 2)
+    buyscrollr(0, -72, 3)
+    buymenu2(0, 16, -2)
+    select = (select+1)%3
+    buymenu()
+    skinitem()
 buttons.on_press(right_button, rightButton)
 
 def leftButton():
@@ -1137,6 +1231,13 @@ def leftButton():
     shopitem()
   elif menu == 8:
     LVK.leftPress()
+  elif menu == 13:
+    buymenu2(16, 0, 2)
+    buyscrollr(0, 72, -3)
+    buymenu2(0, 16, -2)
+    select = (select-1)%3
+    buymenu()
+    skinitem()
 buttons.on_press(left_button, leftButton)
 
 allowed_versions = ['RELEASE', 'BETA', 'ALPHA']
