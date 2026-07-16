@@ -44,7 +44,13 @@ en = [
 'Save',
 'Erase data',
 'Reset',
-'Refresh'
+'Refresh',
+'Skins', #43
+'Default',
+'French',
+'Croatia',
+'Bus',
+'B2 Spirit'
 ]
 
 hr = [
@@ -90,7 +96,13 @@ hr = [
 'Spremi',
 'Obrisi podatke',
 'Ponovno pokreni',
-'Osvjezi'
+'Osvjezi',
+'Skinovi', #43
+'Zadana',
+'Francuska',
+'Hrvatska',
+'Bus',
+'B2 Spirit'
 ]
 
 de = [
@@ -136,7 +148,13 @@ de = [
 'Speichern',
 'Daten loeschen',
 'Zuruecksetzen',
-'Aktualisieren'
+'Aktualisieren',
+'???', #43
+'???',
+'Franzoesiche(s)',
+'Kroatien',
+'Bus',
+'B2 Spirit'
 ]
 
 es = []

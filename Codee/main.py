@@ -13,9 +13,10 @@ menus:
 10: minigame
 11: none
 12: langSelectOnStartup
+13: skins
 """
 
-version = "1.5.0 'KAPPA'"
+version = "1.6.0 'LAMBDA'"
 # DEVEX znači DEVeloper EXchange
 version_type = 'RELEASE'
 version_type = version_type.upper()
@@ -93,10 +94,11 @@ lang = None
 fastl = 0
 selectMeteor = [0, 1, 0]
 running = True
+unlockedSkins = [2, 0, 0, 0, 0]
 
 def save():
   with open('data.txt', 'w') as f:
-    global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl
+    global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl, skin, unlockedSkins
     f.write(str(money)+'\n')
     f.write(str(laser)+'\n')
     f.write(str(meteors)+'\n')
@@ -114,11 +116,13 @@ def save():
     elif lang == lang_fr:
       f.write('fr\n')
     f.write(str(fastl)+'\n')
+    f.write(str(skin)+'\n')
+    f.write(str(unlockedSkins)+'\n')
 
 def load():
   try:
     with open('data.txt', 'r') as f:
-      global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl
+      global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl, skin, unlockedSkins
       money = float(f.readline().strip())
       laser = int(f.readline().strip())
       meteors = int(f.readline().strip())
@@ -137,6 +141,9 @@ def load():
       elif lang == "fr":
         lang = lang_fr[:]
       fastl = int(f.readline().strip())
+      skin = int(f.readline().strip())
+      clean_elements = f.readline().strip().strip("[]").split(",")
+      unlockedSkins = [int(i) for i in clean_elements]
   except:
     pass
 
@@ -183,6 +190,13 @@ def startup():
         mainmenu()
         display.text(str(">"), 0+offsetX, 60, 65535)
         display.commit()
+
+def setskin():
+    global skin, sprite_ship, sprite_ship_transparent, sprite_laser, sprite_laser_transparent
+    sprite_ship = FrameBuffer(shipSkinSprite[skin][3], shipSkinSprite[skin][0], shipSkinSprite[skin][1], RGB565)
+    sprite_ship_transparent = shipSkinSprite[skin][2]
+    sprite_laser = FrameBuffer(laserSkinSprite[skin][3], laserSkinSprite[skin][0], laserSkinSprite[skin][1], RGB565)
+    sprite_laser_transparent = laserSkinSprite[skin][2]
 
 def shuffle(array):
     global lives, select, livesTick
@@ -231,7 +245,8 @@ def mainmenu():
   draw_new_menu_items(lang[6],1)
   draw_new_menu_items(lang[7],2)
   draw_new_menu_items(lang[8],3)
-  display.text('QR', 56+offsetX, (0-select+8)*15, 65535)
+  draw_new_menu_items('QR', 4)
+  draw_new_menu_items(lang[43], 5)
   display.rect(0+offsetX, 0, 128, 8, 16, 1)
   display.text("METEOR SHOOT>R", 8+offsetX, 0, 65535)
 
@@ -404,11 +419,11 @@ def buymenu():
   display.fill(16)
   display.blit(sprite_coin, 0+offsetX, 0, 0)
   display.text(str(money), 13+offsetX, 0, 65535)
-  display.rect(36+offsetX, 36, 56, 56, 33808, 1)
   display.rect(32+offsetX, 32, 64, 64, 0, 1)
   display.rect(0+offsetX, 40, 16, 48, 0, 1)
   display.rect(112+offsetX, 40, 16, 48, 0, 1)
-  shopitem()
+  if menu == 2: shopitem()
+  elif menu == 13: skinitem()
 
 def buyscrollr(startValue, targetValue, step):
   global select, x, menu, laser, meteors, coinsUpg, value
@@ -557,7 +572,7 @@ def gamePrep():
 
 def selectModulo():
   if menu == 1:
-    return 5
+    return 6
   elif menu == 5:
     return 5
   elif menu == 6 or menu == 12:
@@ -639,6 +654,13 @@ def downButton():
     select += 1
     if tone: piezo.tone(200, 50)
     select = select % 8
+  elif menu == 13:
+    buymenu2(16, 0, 2)
+    buyscrollr(0, -72, 3)
+    buymenu2(0, 16, -2)
+    select = (select+1)%3
+    buymenu()
+    skinitem()
 buttons.on_press(down_button, downButton)
 
 def upButton():
@@ -659,10 +681,17 @@ def upButton():
     select = (select-1)%4
     buymenu()
     shopitem()
+  elif menu == 13:
+    buymenu2(16, 0, 2)
+    buyscrollr(0, 72, -3)
+    buymenu2(0, 16, -2)
+    select = (select-1)%3
+    buymenu()
+    skinitem()
 buttons.on_press(up_button, upButton)
 
 def aButton():
-  global fastl, tone, code, select, x, menu, money, laser, meteors, coinsUpg, value, shipX, shipPos, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, multi, lang
+  global fastl, tone, code, select, x, menu, money, laser, meteors, coinsUpg, value, shipX, shipPos, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, multi, lang, unlockedSkins, skin
   if menu == 0:
     shootlaser()
   elif menu == 1:
@@ -683,14 +712,16 @@ def aButton():
       menu = 4
       about()
     elif select == 4:
-      pass
-    elif select == 5:
       global running
       running = False
       save()
       display.fill(65535)
       display.blit(sprite_qr, 0, 0, 0)
       display.commit()
+    elif select == 5:
+      select = skin
+      menu = 13
+      buymenu()
   elif menu == 2:
     if value != 9999 and money >= value:
       if tone: piezo.tone(200, 50)
@@ -791,6 +822,32 @@ def aButton():
     select = 0
     display.fill(0)
     startup()
+  elif menu == 13:
+    temp = value < 9999
+    if temp and money >= value:
+      if tone: piezo.tone(200, 50)
+      money -= value
+      unlockedSkins[select] = 1
+      buymenu()
+      skinitem()
+    else:
+      if temp:
+        display.text(str(money), 13+offsetX, 0, 63488)
+        display.commit()
+      if value == 9999:
+        for i in range(len(unlockedSkins)):
+          if unlockedSkins[i] == 2:
+            unlockedSkins[i] = 1
+        unlockedSkins[select] = 2
+        skin = select
+        setskin()
+        buymenu()
+      if tone: piezo.tone(125, 50)
+      time.sleep(0.25)
+      if temp:
+        display.text(str(money), 13+offsetX, 0, 65535)
+        display.commit()
+    save()
 buttons.on_press(a_button, aButton)
 
 def bButton():
@@ -830,6 +887,12 @@ def bButton():
   elif menu == 3:
     menu = 0
     gamePrep()
+  elif menu == 13:
+    menu = 1
+    select = 6
+    mainmenu()
+    display.text(">",0+offsetX,60,65535)
+    display.commit()
 buttons.on_press(b_button, bButton)
 
 allowed_versions = ['RELEASE', 'BETA', 'ALPHA']
