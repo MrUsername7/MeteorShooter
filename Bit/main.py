@@ -16,7 +16,7 @@ menus:
 13: skins
 """
 
-version = "1.6.0 BETA 1" #'LAMBDA'
+version = "1.6.0 BETA 2" #'LAMBDA'
 # DEVEX znači DEVeloper EXchange
 version_type = 'BETA'
 version_type = version_type.upper()
@@ -403,7 +403,7 @@ def mainmenu():
   draw_new_menu_items(lang[8],3)
   draw_new_menu_items(lang[38],4)
   draw_new_menu_items('QR', 5)
-  draw_new_menu_items('skins', 6)
+  draw_new_menu_items(lang[43], 6)
   display.rect(0+offsetX, 0, 128, 8, 16, 1)
   display.text("METEOR SHOOT>R", 8+offsetX, 0, 65535)
 
@@ -454,38 +454,27 @@ def skinitem():
   display.blit(sprite_coin, 0+offsetX, 0, 0)
   display.text(str(money), 13+offsetX, 0, 65535)
   if select == 0:
-    item = 'default'
-    if unlockedSkins[0]:
-      value = 9998+unlockedSkins[0]
-    else:
-      value = 100
+    item = lang[44]
+    value = 100
   elif select == 1:
-    item = 'french'
-    if unlockedSkins[1]:
-      value = 9998+unlockedSkins[1]
-    else:
-      value = 200
+    item = lang[45]
+    value = 200
   elif select == 2:
-    item = 'croatia'
-    if unlockedSkins[2]:
-      value = 9998+unlockedSkins[2]
-    else:
-      value = 300
+    item = lang[46]
+    value = 300
   elif select == 3:
-    item = 'bus'
-    if unlockedSkins[3]:
-      value = 9998+unlockedSkins[3]
-    else:
-      value = 400
+    item = lang[47]
+    value = 400
   elif select == 4:
-    item = 'b2 spirit'
-    if unlockedSkins[4]:
-      value = 9998+unlockedSkins[4]
-    else:
-      value = 500
+    item = lang[48]
+    value = 500
   else:
     item = 'ERR01'
-  display.text(str(item), 64-len(item)*4+offsetX, 60, 65535)
+  if unlockedSkins[select]:
+    value = 9998 + unlockedSkins[select]
+  display.blit(FrameBuffer(shipSkinSprite[select][3], shipSkinSprite[select][0], shipSkinSprite[select][1], RGB565),48,48,shipSkinSprite[select][2])
+  display.blit(FrameBuffer(laserSkinSprite[select][3], laserSkinSprite[select][0], laserSkinSprite[select][1], RGB565),60,40,laserSkinSprite[select][2])
+  display.text(str(item), 64-len(item)*4+offsetX, 24, 65535)
   if value == 9999:
     temp = "EQUIP"
   elif value == 10000:
@@ -658,7 +647,6 @@ def buymenu():
   display.fill(16)
   display.blit(sprite_coin, 0+offsetX, 0, 0)
   display.text(str(money), 13+offsetX, 0, 65535)
-  display.rect(36+offsetX, 36, 56, 56, 33808, 1)
   display.rect(32+offsetX, 32, 64, 64, 0, 1)
   display.rect(0+offsetX, 40, 16, 48, 0, 1)
   display.rect(112+offsetX, 40, 16, 48, 0, 1)
