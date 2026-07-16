@@ -16,9 +16,9 @@ menus:
 13: skins
 """
 
-version = "1.6.0 BETA 2" #'LAMBDA'
+version = "1.6.0 'LAMBDA'"
 # DEVEX znači DEVeloper EXchange
-version_type = 'BETA'
+version_type = 'RELEASE'
 version_type = version_type.upper()
 
 import network, gc
@@ -455,19 +455,18 @@ def skinitem():
   display.text(str(money), 13+offsetX, 0, 65535)
   if select == 0:
     item = lang[44]
-    value = 100
   elif select == 1:
     item = lang[45]
-    value = 200
+    value = 1000
   elif select == 2:
     item = lang[46]
-    value = 300
+    value = 1000
   elif select == 3:
     item = lang[47]
-    value = 400
+    value = 1000
   elif select == 4:
     item = lang[48]
-    value = 500
+    value = 1000
   else:
     item = 'ERR01'
   if unlockedSkins[select]:
