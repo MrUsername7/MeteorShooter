@@ -1,8 +1,11 @@
 @echo off
 echo Kopiranje...
 
-mpremote resume cp files.py :files.py
-mpremote resume cp sprite_data.py :sprite_data.py
+mpy-cross files.py
+mpy-cross sprite_data.py
+mpremote resume cp files.mpy :files.mpy
+mpremote resume cp sprite_data.mpy :sprite_data.mpy
+rm files.mpy sprite_data.mpy
 mpremote resume cp lang_strings.py :lang_strings.py
 mpremote resume cp main.py :main.py
 mpremote resume cp boot.py :boot.py
