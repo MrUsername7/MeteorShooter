@@ -262,6 +262,40 @@ def mainmenu2():
   display.rect(0+offsetX, 0, 128, 8, 16, 1)
   display.text(lang[7], 64-len(lang[7])*4+offsetX, 0, 65535)
 
+def skinitem():
+  global select, x, menu, laser, meteors, coinsUpg, value, fastl
+  display.blit(sprite_coin, 0+offsetX, 0, 0)
+  display.text(str(money), 13+offsetX, 0, 65535)
+  if select == 0:
+    item = lang[44]
+  elif select == 1:
+    item = lang[45]
+    value = 1000
+  elif select == 2:
+    item = lang[46]
+    value = 1000
+  elif select == 3:
+    item = lang[47]
+    value = 1000
+  elif select == 4:
+    item = lang[48]
+    value = 1000
+  else:
+    item = 'ERR01'
+  if unlockedSkins[select]:
+    value = 9998 + unlockedSkins[select]
+  display.blit(FrameBuffer(shipSkinSprite[select][3], shipSkinSprite[select][0], shipSkinSprite[select][1], RGB565),48,48,shipSkinSprite[select][2])
+  display.blit(FrameBuffer(laserSkinSprite[select][3], laserSkinSprite[select][0], laserSkinSprite[select][1], RGB565),60,40,laserSkinSprite[select][2])
+  display.text(str(item), 64-len(item)*4+offsetX, 24, 65535)
+  if value == 9999:
+    temp = "EQUIP"
+  elif value == 10000:
+    temp = "EQUIPPED"
+  else:
+    temp = value
+  display.text(str(temp), 64-len(str(temp))*4+offsetX, 96, 65535)
+  display.commit()
+
 def appropriateMenu():
   if menu == 1:
     mainmenu()
