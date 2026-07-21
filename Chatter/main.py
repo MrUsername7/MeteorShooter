@@ -16,12 +16,12 @@ menus:
 13: skins
 """
 
-version = "1.6.0 'LAMBDA'"
+version = "1.6.1 'MU'"
 # DEVEX znači DEVeloper EXchange
 version_type = 'RELEASE'
 version_type = version_type.upper()
 
-import network, gc
+import network, gc, machine
 gc.collect()
 wlan = network.WLAN(network.STA_IF)
 gc.collect()
@@ -417,6 +417,7 @@ def mainmenu2():
   draw_new_menu_items(lang[40],3)
   draw_new_menu_items(lang[41],4)
   draw_new_menu_items(lang[26],5)
+  draw_new_menu_items('Overclock',6)
   display.rect(0+offsetX, 0, 128, 8, 16, 1)
   display.text(lang[7], 64-len(lang[7])*4+offsetX, 0, 65535)
 
@@ -802,7 +803,7 @@ def selectModulo():
   if menu == 1:
     return 7
   elif menu == 5:
-    return 6
+    return 7
   elif menu == 6 or menu == 12:
     return 3
   elif menu == 7:
@@ -876,7 +877,6 @@ def wifi_connect_request():
       f.write(pswd + '\n')
     save()
     wlan.disconnect()
-    import machine
     machine.soft_reset()
 
 def downButton():
@@ -1008,7 +1008,6 @@ def aButton():
       display.commit()
     elif select == 4:
       save()
-      import machine
       machine.soft_reset()
     elif select == 5:
       menu = 7
@@ -1016,6 +1015,17 @@ def aButton():
       networkMenu()
       display.text(">",0+offsetX,60,65535)
       display.commit()
+    elif select == 6:
+      _freq = None
+      while _freq not in [80,160,240]:
+        try:
+          _freq = int(input('which MHz: '))
+        except Exception as e:
+          print(str(e))
+        if _freq not in [80,160,240]:
+          print('plz 80, 160 or 240 MHz ok?\nno less due to wifi')
+      machine.freq(_freq*1000000)
+      print('ok')
   elif menu == 6:
     if select == 0:
       lang = lang_en[:]
