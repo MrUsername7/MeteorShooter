@@ -23,6 +23,11 @@ def find_real_path(relative_path):
         base_path = os.path.abspath('.')
     return os.path.join(base_path, relative_path)
 
+def max_at_value(value: float, max_value: float):
+    if value > max_value:
+        return max_value
+    return value
+
 SCREEN_WIDTH: int = 512
 SCREEN_HEIGHT: int = 512
 
@@ -36,11 +41,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 font = pygame.font.SysFont('Arial', 36)
 
 ship = {
-    'image': pygame.image.load(find_real_path('assets/ship.png')),
-    'height': None,
-    'width': None,
-    'x': None,
-    'y': None
+    'image': pygame.image.load(find_real_path('assets/ship.png'))
 }
 
 ship['width'] = ship['image'].get_width() * width_scaling
@@ -48,19 +49,18 @@ ship['height'] = ship['image'].get_height() * height_scaling
 ship['image'] = pygame.transform.scale(ship['image'], (ship['width'], ship['height']))
 ship['x'] = SCREEN_WIDTH // 2 - ship['width'] // 2
 ship['y'] = SCREEN_HEIGHT - ship['height']
+ship['mask'] = pygame.mask.from_surface(ship['image'].convert_alpha())
+ship['speed_x'] = 0
 
 asteroid = {
     'image': pygame.image.load(find_real_path('assets/asteroid.png')),
-    'width': None,
-    'height': None,
-    'x': None,
-    'y': None
 }
 asteroid['width'] = asteroid['image'].get_width() * width_scaling
 asteroid['height'] = asteroid['image'].get_height() * height_scaling
 asteroid['x'] = random.randint(0, int(SCREEN_WIDTH - asteroid['width']))
 asteroid['y'] = -asteroid['height']
 asteroid['image'] = pygame.transform.scale(asteroid['image'], (asteroid['width'], asteroid['height']))
+asteroid['mask'] = pygame.mask.from_surface(asteroid['image'].convert_alpha())
 
 lasers = {
     'image': pygame.image.load(find_real_path('assets/laser.bmp')),
@@ -71,27 +71,46 @@ lasers['image'] = pygame.transform.scale(lasers['image'],
                                           lasers['image'].get_height() * height_scaling))
 lasers['width'] = lasers['image'].get_width()
 lasers['height'] = lasers['image'].get_height()
+lasers['mask'] = pygame.mask.from_surface(lasers['image'].convert_alpha())
 
 score = 0
+meteors_shot = 0
+score_multiplier = 1
+ASTEROID_BASE_SPEED = 0.5
+ASTEROID_SPEED_ACCELERATION = 0.05
+max_value = 6.5
+over_max_value = False
+asteroid['speed_y'] = max_at_value((ASTEROID_BASE_SPEED + meteors_shot / 10 * ASTEROID_SPEED_ACCELERATION) * height_scaling, max_value)
 
-FPS = 60
+FPS = 50
 game_over = False
 running = True
 while running:
     if not game_over:
-        #game over detection
-        ship_rect = pygame.Rect(ship['x'], ship['y'], ship['width'], ship['height'])
-        asteroid_rect = pygame.Rect(asteroid['x'], asteroid['y'], asteroid['width'], asteroid['height'])
-        if pygame.Rect.colliderect(ship_rect, asteroid_rect) or asteroid['y'] > SCREEN_HEIGHT:
+        # game over detection
+        if ship['mask'].overlap(asteroid['mask'],
+                                (asteroid['x'] - ship['x'],
+                                 asteroid['y'] - ship['y'])) is not None or asteroid['y'] > SCREEN_HEIGHT:
             game_over = True
 
+        # destroy asteroids
         for i in range(len(lasers['entities'])):
-            laser_rect = pygame.Rect(lasers['entities'][i]['x'],
-                                     lasers['entities'][i]['y'],
-                                     lasers['width'],
-                                     lasers['height'])
-            if pygame.Rect.colliderect(laser_rect, asteroid_rect):
-                score += 1
+            if asteroid['mask'].overlap(lasers['mask'],
+                                        (lasers['entities'][i]['x'] - asteroid['x'],
+                                         lasers['entities'][i]['y'] - asteroid['y'])):
+                score += score_multiplier * 1
+                meteors_shot += 1
+                if meteors_shot == 40:
+                    score_multiplier = 5 / 4
+                elif meteors_shot == 65:
+                    score_multiplier = 3 / 2
+                elif meteors_shot == 100:
+                    score_multiplier = 2
+
+                if not over_max_value:
+                    asteroid['speed_y'] = max_at_value((ASTEROID_BASE_SPEED + meteors_shot * ASTEROID_SPEED_ACCELERATION) * height_scaling, max_value)
+                if asteroid['speed_y'] == max_value:
+                    over_max_value = True
                 lasers['entities'][i]['destroyed'] = True
                 asteroid['x'] = random.randint(0, int(SCREEN_WIDTH - asteroid['width']))
                 asteroid['y'] = -asteroid['height']
@@ -101,7 +120,7 @@ while running:
             lasers['entities'][i]['y'] -= 4
             if lasers['entities'][i]['y'] < -lasers['height']:
                 lasers['entities'][i]['destroyed'] = True
-        #destroy lasers
+        # destroy lasers
         destroyed_lasers_exist = True
         while destroyed_lasers_exist and len(lasers['entities']) > 0:
             for i in range(len(lasers['entities'])):
@@ -111,7 +130,7 @@ while running:
                 elif i == len(lasers['entities']) - 1:
                     destroyed_lasers_exist = False
 
-    #handle events
+    # handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -124,33 +143,54 @@ while running:
                 })
     if not game_over:
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            if ship['x'] > 4:
-                ship['x'] -= 4
+        if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
+            if keys[pygame.K_LEFT]:
+                ship['speed_x'] -= 1
+            if keys[pygame.K_RIGHT]:
+                ship['speed_x'] += 1
+        else:
+            if ship['speed_x'] > 0:
+                if ship['speed_x'] - 1 > 0:
+                    ship['speed_x'] -= 1
+                else:
+                    ship['speed_x'] = 0
             else:
-                ship['x'] = 0
-        if keys[pygame.K_RIGHT]:
-            if ship['x'] < SCREEN_WIDTH - ship['width'] - 4:
-                ship['x'] += 4
-            else:
-                ship['x'] = SCREEN_WIDTH - ship['width']
+                if ship['speed_x'] + 1 < 0:
+                    ship['speed_x'] += 1
+                else:
+                    ship['speed_x'] = 0
 
-        #move asteroid
-        asteroid['y'] += 0.5
+        # move ship
+        if ship['x'] + ship['speed_x'] < 0:
+            ship['x'] = 0
+            ship['speed_x'] = 0
+        elif ship['x'] + ship['speed_x'] > SCREEN_WIDTH - ship['width']:
+            ship['x'] = SCREEN_WIDTH - ship['width']
+            ship['speed_x'] = 0
+        else:
+            ship['x'] += ship['speed_x']
+
+        # move asteroid
+        asteroid['y'] += asteroid['speed_y']
 
         # render the scene
         screen.fill((0, 0, 0))
-        screen.blit(asteroid['image'], (asteroid['x'], asteroid['y']))
         for i in lasers['entities']:
             screen.blit(lasers['image'], (i['x'], i['y']))
         screen.blit(ship['image'], (ship['x'], ship['y']))
-        score_text = font.render('Score: ' + str(score), True, (255, 255, 255))
+        screen.blit(asteroid['image'], (asteroid['x'], asteroid['y']))
+        if score % 1 == 0:
+            score_text = font.render('Score: ' + str(int(score)), True, (255, 255, 255))
+        elif score % 0.1 == 0:
+            score_text = font.render('Score: ' + str(round(score, 1)), True, (255, 255, 255))
+        else:
+            score_text = font.render('Score: ' + str(round(score, 2)), True, (255, 255, 255))
         screen.blit(score_text, (0, 0))
     else:
         game_over_text = font.render('Game Over!', True, (255, 255, 255))
         screen.blit(game_over_text,
                     (SCREEN_WIDTH // 2 - game_over_text.get_width() // 2,
-                          SCREEN_HEIGHT // 2 - game_over_text.get_height() // 2))
+                     SCREEN_HEIGHT // 2 - game_over_text.get_height() // 2))
     pygame.display.flip()
     pygame.time.Clock().tick(FPS)
 
