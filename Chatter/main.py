@@ -13,14 +13,15 @@ menus:
 10: minigame
 11: listNetworks
 12: langSelectOnStartup
+13: skins
 """
 
-version = "MS 1.4.3 'IOTA'"
+version = "1.6.1 'MU'"
 # DEVEX znači DEVeloper EXchange
 version_type = 'RELEASE'
 version_type = version_type.upper()
 
-import network, gc
+import network, gc, machine
 gc.collect()
 wlan = network.WLAN(network.STA_IF)
 gc.collect()
@@ -33,23 +34,23 @@ import math, random, array, time
 begin()
 from sprite_data import *
 skin = 0
-sprite_coin = FrameBuffer(coinSprite, 11, 11, RGB565)
+sprite_coin = FrameBuffer(coinSprite[3], coinSprite[0], coinSprite[1], RGB565)
 meteor_type = [0,0,0]
 sprite_asteroid = [FrameBuffer(asteroidTypeSprite[meteor_type[0]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[1]][0], 27, 25, RGB565), FrameBuffer(asteroidTypeSprite[meteor_type[2]][0], 27, 25, RGB565)]
 sprite_asteroid_transparent = [asteroidTypeSprite[meteor_type[0]][1], asteroidTypeSprite[meteor_type[1]][1], asteroidTypeSprite[meteor_type[2]][1]]
-sprite_cup = FrameBuffer(cupSprite, 40, 40, RGB565)
-sprite_ship = FrameBuffer(shipSkinSprite[skin][0], 32, 48, RGB565)
-sprite_ship_transparent = shipSkinSprite[skin][1]
-sprite_laser = FrameBuffer(laserSkinSprite[skin][0], 3, 6, RGB565)
-sprite_laser_transparent = laserSkinSprite[skin][1]
-sprite_life2times = FrameBuffer(life2timesSprite, 31, 10, RGB565)
-sprite_life = FrameBuffer(lifeSprite, 11, 10, RGB565)
-sprite_alien = FrameBuffer(alienSprite, 22, 29, RGB565)
-sprite_qr = FrameBuffer(qrSprite, 128, 128, MONO_HLSB)
+sprite_cup = FrameBuffer(cupSprite[3], cupSprite[0], cupSprite[1], RGB565)
+sprite_ship = FrameBuffer(shipSkinSprite[skin][3], shipSkinSprite[skin][0], shipSkinSprite[skin][1], RGB565)
+sprite_ship_transparent = shipSkinSprite[skin][2]
+sprite_laser = FrameBuffer(laserSkinSprite[skin][3], laserSkinSprite[skin][0], laserSkinSprite[skin][1], RGB565)
+sprite_laser_transparent = laserSkinSprite[skin][2]
+sprite_life2times = FrameBuffer(life2timesSprite[3], life2timesSprite[0], life2timesSprite[1], RGB565)
+sprite_life = FrameBuffer(lifeSprite[3], lifeSprite[0], lifeSprite[1], RGB565)
+sprite_alien = FrameBuffer(alienSprite[3], alienSprite[0], alienSprite[1], RGB565)
+sprite_qr = FrameBuffer(qrSprite[2], qrSprite[0], qrSprite[1], MONO_HLSB)
 
-sprite_hr = FrameBuffer(hrSprite, 15, 8, RGB565)
-sprite_en = FrameBuffer(enSprite, 15, 8, RGB565)
-sprite_de = FrameBuffer(deSprite, 15, 8, RGB565)
+sprite_hr = FrameBuffer(hrSprite[3], hrSprite[0], hrSprite[1], RGB565)
+sprite_en = FrameBuffer(enSprite[3], enSprite[0], enSprite[1], RGB565)
+sprite_de = FrameBuffer(deSprite[3], deSprite[0], deSprite[1], RGB565)
 
 offsetX = 16
 
@@ -242,10 +243,11 @@ ssid = None
 pswd = None
 running = True
 networks = None
+unlockedSkins = [2, 0, 0, 0, 0]
 
 def save():
   with open('data.txt', 'w') as f:
-    global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl, ssid, pswd
+    global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl, skin, unlockedSkins
     f.write(str(money)+'\n')
     f.write(str(laser)+'\n')
     f.write(str(meteors)+'\n')
@@ -263,11 +265,13 @@ def save():
     elif lang == lang_fr:
       f.write('fr\n')
     f.write(str(fastl)+'\n')
+    f.write(str(skin)+'\n')
+    f.write(str(unlockedSkins)+'\n')
 
 def load():
   try:
     with open('data.txt', 'r') as f:
-      global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl
+      global money, laser, meteors, coinsUpg, tone, totalDistance, lang, fastl, skin, unlockedSkins
       money = float(f.readline().strip())
       laser = int(f.readline().strip())
       meteors = int(f.readline().strip())
@@ -286,6 +290,9 @@ def load():
       elif lang == "fr":
         lang = lang_fr[:]
       fastl = int(f.readline().strip())
+      skin = int(f.readline().strip())
+      clean_elements = f.readline().strip().strip("[]").split(",")
+      unlockedSkins = [int(i) for i in clean_elements]
   except:
     pass
   try:
@@ -342,11 +349,10 @@ def startup():
 
 def setskin():
     global skin, sprite_ship, sprite_ship_transparent, sprite_laser, sprite_laser_transparent
-    skin = (skin+1)%3
-    sprite_ship = FrameBuffer(shipSkinSprite[skin][0], 32, 48, RGB565)
-    sprite_ship_transparent = shipSkinSprite[skin][1]
-    sprite_laser = FrameBuffer(laserSkinSprite[skin][0], 3, 6, RGB565)
-    sprite_laser_transparent = laserSkinSprite[skin][1]
+    sprite_ship = FrameBuffer(shipSkinSprite[skin][3], shipSkinSprite[skin][0], shipSkinSprite[skin][1], RGB565)
+    sprite_ship_transparent = shipSkinSprite[skin][2]
+    sprite_laser = FrameBuffer(laserSkinSprite[skin][3], laserSkinSprite[skin][0], laserSkinSprite[skin][1], RGB565)
+    sprite_laser_transparent = laserSkinSprite[skin][2]
 
 def shuffle(array):
     global lives, select, livesTick
@@ -396,7 +402,8 @@ def mainmenu():
   draw_new_menu_items(lang[7],2)
   draw_new_menu_items(lang[8],3)
   draw_new_menu_items(lang[38],4)
-  display.text('QR', 56+offsetX, (0-select+9)*15, 65535)
+  draw_new_menu_items('QR', 5)
+  draw_new_menu_items(lang[43], 6)
   display.rect(0+offsetX, 0, 128, 8, 16, 1)
   display.text("METEOR SHOOT>R", 8+offsetX, 0, 65535)
 
@@ -410,6 +417,7 @@ def mainmenu2():
   draw_new_menu_items(lang[40],3)
   draw_new_menu_items(lang[41],4)
   draw_new_menu_items(lang[26],5)
+  draw_new_menu_items('Overclock',6)
   display.rect(0+offsetX, 0, 128, 8, 16, 1)
   display.text(lang[7], 64-len(lang[7])*4+offsetX, 0, 65535)
 
@@ -441,6 +449,40 @@ def listNetworks():
     draw_new_menu_items(lang[42], 0)
     for i in range(len(networks)):
         draw_new_menu_items(networks[i][0].decode(), i-5)
+
+def skinitem():
+  global select, x, menu, laser, meteors, coinsUpg, value, fastl
+  display.blit(sprite_coin, 0+offsetX, 0, 0)
+  display.text(str(money), 13+offsetX, 0, 65535)
+  if select == 0:
+    item = lang[44]
+  elif select == 1:
+    item = lang[45]
+    value = 1000
+  elif select == 2:
+    item = lang[46]
+    value = 1000
+  elif select == 3:
+    item = lang[47]
+    value = 1000
+  elif select == 4:
+    item = lang[48]
+    value = 1000
+  else:
+    item = 'ERR01'
+  if unlockedSkins[select]:
+    value = 9998 + unlockedSkins[select]
+  display.blit(FrameBuffer(shipSkinSprite[select][3], shipSkinSprite[select][0], shipSkinSprite[select][1], RGB565),48,48,shipSkinSprite[select][2])
+  display.blit(FrameBuffer(laserSkinSprite[select][3], laserSkinSprite[select][0], laserSkinSprite[select][1], RGB565),60,40,laserSkinSprite[select][2])
+  display.text(str(item), 64-len(item)*4+offsetX, 24, 65535)
+  if value == 9999:
+    temp = "EQUIP"
+  elif value == 10000:
+    temp = "EQUIPPED"
+  else:
+    temp = value
+  display.text(str(temp), 64-len(str(temp))*4+offsetX, 96, 65535)
+  display.commit()
 
 def appropriateMenu():
   if menu == 1:
@@ -605,11 +647,11 @@ def buymenu():
   display.fill(16)
   display.blit(sprite_coin, 0+offsetX, 0, 0)
   display.text(str(money), 13+offsetX, 0, 65535)
-  display.rect(36+offsetX, 36, 56, 56, 33808, 1)
   display.rect(32+offsetX, 32, 64, 64, 0, 1)
   display.rect(0+offsetX, 40, 16, 48, 0, 1)
   display.rect(112+offsetX, 40, 16, 48, 0, 1)
-  shopitem()
+  if menu == 2: shopitem()
+  elif menu == 13: skinitem()
 
 def buyscrollr(startValue, targetValue, step):
   global select, x, menu, laser, meteors, coinsUpg, value
@@ -716,8 +758,6 @@ def helps():
     display.text(lang[19], 40+offsetX, 8, 65535)
     display.text(lang[20], 40+offsetX, 16, 65535)
     item = lang[21]+"1/3"
-    item2 = lang[22]
-    item3 = lang[23]
   elif select == 1:
     display.text(lang[24], 10+offsetX, 12, 65535)
     display.text(lang[25], 26+offsetX, 18, 65535)
@@ -747,7 +787,7 @@ def gamePrep():
   meteorsShotInSession = 0
   fVA = 2
   fVB = 3
-  fVC = 3
+  fVC = 7/4
   lives = 1
   if meteors == 0:
       selectMeteor = [0, 1, 0]
@@ -761,9 +801,9 @@ def gamePrep():
 def selectModulo():
   global networks
   if menu == 1:
-    return 6
+    return 7
   elif menu == 5:
-    return 6
+    return 7
   elif menu == 6 or menu == 12:
     return 3
   elif menu == 7:
@@ -837,7 +877,6 @@ def wifi_connect_request():
       f.write(pswd + '\n')
     save()
     wlan.disconnect()
-    import machine
     machine.soft_reset()
 
 def downButton():
@@ -859,7 +898,7 @@ def upButton():
 buttons.on_press(up_button, upButton)
 
 def aButton():
-  global ssid, pswd, fastl, tone, code, select, x, menu, money, laser, meteors, coinsUpg, value, shipX, shipPos, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, multi, lang
+  global ssid, pswd, fastl, tone, code, select, x, menu, money, laser, meteors, coinsUpg, value, shipX, shipPos, meteorAY, meteorBY, meteorCY, meteorsShotInSession, fVA, fVB, fVC, multi, lang, unlockedSkins, skin
   if menu == 0:
     shootlaser()
   elif menu == 1:
@@ -888,6 +927,10 @@ def aButton():
       display.fill(65535)
       display.blit(sprite_qr, 0, 0, 0)
       display.commit()
+    elif select == 6:
+      select = skin
+      menu = 13
+      buymenu()
   elif menu == 2:
     if value != 9999 and money >= value:
       if tone: piezo.tone(200, 50)
@@ -965,7 +1008,6 @@ def aButton():
       display.commit()
     elif select == 4:
       save()
-      import machine
       machine.soft_reset()
     elif select == 5:
       menu = 7
@@ -973,6 +1015,17 @@ def aButton():
       networkMenu()
       display.text(">",0+offsetX,60,65535)
       display.commit()
+    elif select == 6:
+      _freq = None
+      while _freq not in [80,160,240]:
+        try:
+          _freq = int(input('which MHz: '))
+        except Exception as e:
+          print(str(e))
+        if _freq not in [80,160,240]:
+          print('plz 80, 160 or 240 MHz ok?\nno less due to wifi')
+      machine.freq(_freq*1000000)
+      print('ok')
   elif menu == 6:
     if select == 0:
       lang = lang_en[:]
@@ -1029,6 +1082,32 @@ def aButton():
     select = 0
     display.fill(0)
     startup()
+  elif menu == 13:
+    temp = value < 9999
+    if temp and money >= value:
+      if tone: piezo.tone(200, 50)
+      money -= value
+      unlockedSkins[select] = 1
+      buymenu()
+      skinitem()
+    else:
+      if temp:
+        display.text(str(money), 13+offsetX, 0, 63488)
+        display.commit()
+      if value == 9999:
+        for i in range(len(unlockedSkins)):
+          if unlockedSkins[i] == 2:
+            unlockedSkins[i] = 1
+        unlockedSkins[select] = 2
+        skin = select
+        setskin()
+        buymenu()
+      if tone: piezo.tone(125, 50)
+      time.sleep(0.25)
+      if temp:
+        display.text(str(money), 13+offsetX, 0, 65535)
+        display.commit()
+    save()
 buttons.on_press(a_button, aButton)
 
 def menuButton():
@@ -1053,9 +1132,6 @@ def menuButton():
     display.commit()
     import webrepl
     webrepl.start(password='1234')
-  elif menu == 5:
-      setskin()
-      print(f'Skin set to {skin}.')
   elif menu == 8:
     LVK.shiftLock()
 buttons.on_press(menu_button, menuButton)
@@ -1101,6 +1177,12 @@ def bButton():
     networkMenu()
     display.text(">", 0+offsetX, 60, 65535)
     display.commit()
+  elif menu == 13:
+    menu = 1
+    select = 6
+    mainmenu()
+    display.text(">",0+offsetX,60,65535)
+    display.commit()
 buttons.on_press(b_button, bButton)
 
 def rightButton():
@@ -1120,6 +1202,13 @@ def rightButton():
     shopitem()
   elif menu == 8:
     LVK.rightPress()
+  elif menu == 13:
+    buymenu2(16, 0, 2)
+    buyscrollr(0, -72, 3)
+    buymenu2(0, 16, -2)
+    select = (select+1)%3
+    buymenu()
+    skinitem()
 buttons.on_press(right_button, rightButton)
 
 def leftButton():
@@ -1139,6 +1228,13 @@ def leftButton():
     shopitem()
   elif menu == 8:
     LVK.leftPress()
+  elif menu == 13:
+    buymenu2(16, 0, 2)
+    buyscrollr(0, 72, -3)
+    buymenu2(0, 16, -2)
+    select = (select-1)%3
+    buymenu()
+    skinitem()
 buttons.on_press(left_button, leftButton)
 
 allowed_versions = ['RELEASE', 'BETA', 'ALPHA']
