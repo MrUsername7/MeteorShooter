@@ -16,7 +16,7 @@ menus:
 13: skins
 """
 
-version = "1.6.1 'MU'"
+version = "1.6.2 'NU'"
 # DEVEX znači DEVeloper EXchange
 version_type = 'RELEASE'
 version_type = version_type.upper()
@@ -317,7 +317,7 @@ def scroll():
 def minigameSetup():
   global livesTick, lives
   shuffle(cupsList)
-  if livesTick == 0 and lives == 0:
+  if (livesTick == 0 and lives <= 0) or (lives <= 0):
     minigame()
 
 def drawgame():
@@ -329,13 +329,12 @@ def drawgame():
   display.blit(sprite_asteroid[2], 104+offsetX, int(meteorCY), sprite_asteroid_transparent[2])
   shipPos = ((shipX+4)/52)+1
   display.blit(sprite_coin, 0+offsetX, 0, 0)
-  display.text(str(round(money)), 13+offsetX, 0, 65535)
-  display.text(str(coinsUpg+1), 0+offsetX, 12, 65535)
+  display.text(f'{money}', 13+offsetX, 0, 65535)
+  display.text(f'{coinsUpg}', 0+offsetX, 12, 65535)
   if multi > 1:
-    display.text(str("x"), 13 + len(str(round(money)))*8+offsetX, 0, 65535)
-    display.text(str(multi), 21 + len(str(round(money)))*8+offsetX, 0, 65535)
-  display.blit(sprite_life, 0+offsetX, 31, 0)
-  display.text(str(lives)+","+str(livesTick), 11+offsetX, 31, 65535)
+    display.text(f'x{multi}', 8+offsetX, 12, 65535)
+  display.blit(sprite_life, 0+offsetX, 20, 0)
+  display.text(f'{lives},{livesTick}', 11+offsetX, 20, 65535)
 
 def game():
   global totalDistance, livesTick, lives, shipX, meteorAY, meteorBY, meteorCY, shipPos, money, meteorKill, meteorNoKill, fVA, fVB, fVC, meteorsShotInSession, multi, menu
@@ -443,7 +442,7 @@ def minigame(aPressed=False): #nedovršeno
     display.commit()
     time.sleep(1)
     lives += item
-    if lives == 0:
+    if lives <= 0:
       menuButton()
     else:
       livesTick = 125
@@ -551,29 +550,33 @@ def helps():
   menu = 3
   display.fill(0)
   display.blit(sprite_coin, 0+offsetX, 0, 0)
-  display.text(str(round(money)), 13+offsetX, 0, 65535)
-  display.text(str("x"), 13 + len(str(round(money)))*8+offsetX, 0, 65535)
-  display.text(str(multi), 21 + len(str(round(money)))*8+offsetX, 0, 65535)
-  display.text(str(coinsUpg+1), 0+offsetX, 12, 65535)
-  display.text(str(lives)+",0", 11+offsetX, 31, 65535)
-  display.blit(sprite_life, 0+offsetX, 31, 0)
+  display.text('123', 13+offsetX, 0, 65535)
+  display.text('2x1.5', 0+offsetX, 12, 65535)
+  display.blit(sprite_life, 0+offsetX, 20, 0)
+  display.text('1,0', 11+offsetX, 20, 65535)
   item = 'ERROR'
   item2 = lang[22]
   item3 = lang[23]
   if select == 0:
     display.text(lang[18], 40+offsetX, 0, 65535)
-    display.text(lang[19], 40+offsetX, 8, 65535)
-    display.text(lang[20], 40+offsetX, 16, 65535)
-    item = lang[21]+"1/3"
+    item = lang[21]+"1/4"
   elif select == 1:
-    display.text(lang[24], 10+offsetX, 12, 65535)
-    display.text(lang[25], 26+offsetX, 18, 65535)
-    item = lang[21]+"2/3"
+    display.text(lang[24], 40+offsetX, 12, 65535)
+    display.text(lang[25], 40+offsetX, 20, 65535)
+    display.text(lang[19], 40+offsetX, 28, 65535)
+    display.text(lang[20], 40+offsetX, 36, 65535)
+    item = lang[21]+"2/4"
   elif select == 2:
+  # display.text(lang[24], 40+offsetX, 12, 65535)
+  # display.text(lang[25], 40+offsetX, 18, 65535)
+  # display.text(lang[19], 40+offsetX, 8, 65535)
+  # display.text(lang[20], 40+offsetX, 16, 65535)
+    item = lang[21]+"3/4"
+  elif select == 3:
     display.text(lang[27], 0+offsetX, 40, 65535)
     display.text(lang[28], 0+offsetX, 48, 65535)
     display.text(lang[29], 0+offsetX, 56, 65535)
-    item = lang[21]+"3/3"
+    item = lang[21]+"4/4"
     item2 = lang[30]
   display.text(str(item), 64 - len(item) * 4+offsetX, 104, 65535)
   display.text(str(item2), 64 - len(item2) * 4+offsetX, 112, 65535)
@@ -783,7 +786,7 @@ def aButton():
         display.text(str(money), 13+offsetX, 0, 65535)
         display.commit()
   elif menu == 3:
-    if select == 2:
+    if select == 3:
       menu = 0
       gamePrep()
     else:
@@ -953,6 +956,8 @@ if version_type in allowed_versions:
       display.commit()
   while running:
     buttons.scan()
+    if lives < 0:
+      lives = 0
     if menu == 0:
       temp = random.randint(0,2)
       if temp == 0 and selectMeteor[0]:
@@ -965,14 +970,17 @@ if version_type in allowed_versions:
         mAH = 3
         meteorAY = -40
         shuffleMeteors()
+        minigameSetup()
       elif meteorBY >= 130:
         mBH = 3
         meteorBY = -40
         shuffleMeteors()
+        minigameSetup()
       elif meteorCY >= 130:
         mCH = 3
         meteorCY = -40
         shuffleMeteors()
+        minigameSetup()
       game()
     elif menu == 10:
         minigame()
