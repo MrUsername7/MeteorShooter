@@ -2,9 +2,9 @@ import os
 
 try:
     default_pygame_support_prompt = os.environ['PYGAME_HIDE_SUPPORT_PROMPT']
-    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 except KeyError:
-    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+    pass
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
 import pygame
 
@@ -200,12 +200,14 @@ while running:
             screen.blit(lasers['image'], (i['x'], i['y']))
         screen.blit(ship['image'], (ship['x'], ship['y']))
         screen.blit(asteroid['image'], (asteroid['x'], asteroid['y']))
+        # why 3 lengthy score_text calls rather than 3 small score_to_display calls that merge at the end
         if score % 1 == 0:
-            score_text = font.render('Score: ' + str(int(score)), True, (255, 255, 255))
+            score_to_display = int(score)
         elif score % 0.1 == 0:
-            score_text = font.render('Score: ' + str(round(score, 1)), True, (255, 255, 255))
+            score_to_display = round(score, 1)
         else:
-            score_text = font.render('Score: ' + str(round(score, 2)), True, (255, 255, 255))
+            score_to_display = round(score, 2)
+        score_text = font.render('Score: ' + str(score_to_display), True, (255, 255, 255))
         screen.blit(score_text, (0, 0))
     else:
         game_over_text = font.render('Game Over!', False, (255, 255, 255)) # antialiasing just looked bad to me, like 2 texts stacked on one another
