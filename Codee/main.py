@@ -16,7 +16,7 @@ menus:
 13: skins
 """
 
-version = "1.6.2 'NU'"
+version = "1.6.3"
 # DEVEX znači DEVeloper EXchange
 version_type = 'RELEASE'
 version_type = version_type.upper()
@@ -948,7 +948,7 @@ allowed_versions = ['RELEASE', 'BETA', 'ALPHA']
 if version_type in allowed_versions:
   print('Meteor Shooter',version)
   print('Za STEMIovu Školu budućnosti')
-  print('GitHub: https://github.com/MrUsername7/MeteorShooter')
+  print('GitHub: https://github.com/The-Bit-Superstars/Meteor-Shooter')
   startup()
   if menu == 1:
       mainmenu()
