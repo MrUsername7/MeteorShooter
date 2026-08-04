@@ -2,9 +2,9 @@ import os
 
 try:
     default_pygame_support_prompt = os.environ['PYGAME_HIDE_SUPPORT_PROMPT']
-    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 except KeyError:
-    os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+    pass
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
 import pygame
 
@@ -34,8 +34,10 @@ SCREEN_HEIGHT: int = 512
 width_scaling = SCREEN_WIDTH / 128
 height_scaling = SCREEN_HEIGHT / 128
 
+version = '0.3'
+
 pygame.init()
-pygame.display.set_caption('Meteor Shooter')
+pygame.display.set_caption(f'Meteor Shooter {version}')
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 font = pygame.font.SysFont('Arial', 36)
@@ -85,13 +87,18 @@ asteroid['speed_y'] = max_at_value((ASTEROID_BASE_SPEED + meteors_shot / 10 * AS
 FPS = 50
 game_over = False
 running = True
+game_over_cause = 'error'
 while running:
     if not game_over:
         # game over detection
         if ship['mask'].overlap(asteroid['mask'],
                                 (asteroid['x'] - ship['x'],
-                                 asteroid['y'] - ship['y'])) is not None or asteroid['y'] > SCREEN_HEIGHT:
+                                 asteroid['y'] - ship['y'])) is not None:
             game_over = True
+            game_over_cause = 'Collided with meteor'
+        elif asteroid['y'] > SCREEN_HEIGHT:
+            game_over = True
+            game_over_cause = 'Meteor went off screen'
 
         # destroy asteroids
         for i in range(len(lasers['entities'])):
@@ -134,13 +141,27 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN and not game_over:
-            if event.key == pygame.K_SPACE:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and not game_over:
                 lasers['entities'].append({
                     'x': ship['x'] + (ship['width'] // 2) - (lasers['width'] // 2),
                     'y': SCREEN_HEIGHT - ship['height'] - lasers['height'],
                     'destroyed': False
                 })
+            if event.key == pygame.K_r and game_over:
+                score = 0
+                meteors_shot = 0
+                score_multiplier = 1
+                ASTEROID_BASE_SPEED = 0.5
+                ASTEROID_SPEED_ACCELERATION = 0.05
+                max_value = 6.5
+                over_max_value = False
+                ship['x'] = SCREEN_WIDTH // 2 - ship['width'] // 2
+                asteroid['x'] = random.randint(0, int(SCREEN_WIDTH - asteroid['width']))
+                asteroid['y'] = -asteroid['height']
+                asteroid['speed_y'] = max_at_value((ASTEROID_BASE_SPEED + meteors_shot / 10 * ASTEROID_SPEED_ACCELERATION) * height_scaling, max_value)
+                game_over_cause = 'error'
+                game_over = False
     if not game_over:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
@@ -179,18 +200,28 @@ while running:
             screen.blit(lasers['image'], (i['x'], i['y']))
         screen.blit(ship['image'], (ship['x'], ship['y']))
         screen.blit(asteroid['image'], (asteroid['x'], asteroid['y']))
+        # why 3 lengthy score_text calls rather than 3 small score_to_display calls that merge at the end
         if score % 1 == 0:
-            score_text = font.render('Score: ' + str(int(score)), True, (255, 255, 255))
+            score_to_display = int(score)
         elif score % 0.1 == 0:
-            score_text = font.render('Score: ' + str(round(score, 1)), True, (255, 255, 255))
+            score_to_display = round(score, 1)
         else:
-            score_text = font.render('Score: ' + str(round(score, 2)), True, (255, 255, 255))
+            score_to_display = round(score, 2)
+        score_text = font.render('Score: ' + str(score_to_display), True, (255, 255, 255))
         screen.blit(score_text, (0, 0))
     else:
-        game_over_text = font.render('Game Over!', True, (255, 255, 255))
+        game_over_text = font.render('Game Over!', False, (255, 255, 255)) # antialiasing just looked bad to me, like 2 texts stacked on one another
         screen.blit(game_over_text,
                     (SCREEN_WIDTH // 2 - game_over_text.get_width() // 2,
-                     SCREEN_HEIGHT // 2 - game_over_text.get_height() // 2))
+                     SCREEN_HEIGHT // 2 - game_over_text.get_height() * 2))
+        game_over_cause_text = font.render(game_over_cause, False, (255, 255, 255))
+        screen.blit(game_over_cause_text,
+                    (SCREEN_WIDTH // 2 - game_over_cause_text.get_width() // 2,
+                     SCREEN_HEIGHT // 2  - game_over_cause_text.get_height()))
+        retry_text = font.render('Press R to retry', False, (255, 255, 255))
+        screen.blit(retry_text,
+                    (SCREEN_WIDTH // 2 - retry_text.get_width() // 2,
+                     SCREEN_HEIGHT // 2))
     pygame.display.flip()
     pygame.time.Clock().tick(FPS)
 
